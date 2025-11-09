@@ -28,6 +28,12 @@ node_modules/
 /tripko-backend/mail_debug.log
 /tripko-backend/*.log
 
+# Local helper scripts and SQL dumps (do not track)
+/tripko-backend/import_to_railway.php
+/tripko-backend/test_railway_connection.php
+/tripko-backend/test_local_connection.php
+/tripko_schema*.sql
+
 # Local build/output caches
 **/.cache/
 **/dist/
