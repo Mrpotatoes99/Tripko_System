@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TripKo Pangasinan - Terminal Locations</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+  <link rel="stylesheet" href="../../file_css/dashboard.css" />
+    <link rel="stylesheet" href="../file_css/tourist_spot.css" /> 
+
+
+  <style>
+    body {
+      font-family: 'poppins';
+      font-size: 17px;
+    }
+
+    .nav-links a,
+    .font-medium,
+    button,
+    select,
+    input,
+    p,
+    h1, h2, h3, h4, h5, h6 {
+        font-family: 'poppins';
+    }
+
+    canvas#transportChart {
+      width: 100% !important;
+      height: 100% !important;
+      position: absolute !important;
+      top: 0;
+      left: 0;
+    }
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Transport dropdown
+        const transportDropdown = document.getElementById('transportDropdown');
+        const transportDropdownIcon = document.getElementById('transportDropdownIcon');
+
+        // Close dropdown
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#transportDropdown') && !e.target.closest('[onclick*="toggleTransportDropdown"]')) {
+                transportDropdown?.classList.add('hidden');
+                if (transportDropdownIcon) {
+                    transportDropdownIcon.style.transform = 'rotate(0deg)';
+                }
+            }
+        });
+
+        // Close admin dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+          if (!e.target.closest('#adminDropdown')) {
+            document.getElementById('adminDropdownContent')?.classList.add('hidden');
+          }
+        });
+
+        // Initialize terminals with pagination
+        loadTerminals();
+    });
+  </script>
+</head>
+<body class="bg-white text-gray-900">
+  <div class="flex min-h-screen">
+  <!-- Sidebar -->
+  <?php include __DIR__ . '/includes/sidebar.php'; ?>
+
+    <!-- Main content -->
+    <main class="flex-1 bg-[#F3F1E7] p-6">
+      <header class="flex items-center justify-between">
+        <div class="flex items-center gap-3 text-gray-900 font-normal text-base">
+          <button aria-label="Menu" class="focus:outline-none">
+            <i class="fas fa-bars text-lg"></i>
+          </button>
+          <span>Terminal Management</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <div>
+            <input type="search" placeholder="Search terminals" class="w-48 md:w-64 rounded-full border border-gray-400 bg-[#F3F1E7] py-1.5 px-4 text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#255D8A]" />
+          </div>
+          <div class="relative" id="adminDropdown">
+            <button aria-label="Admin Profile" class="text-black text-xl focus:outline-none flex items-center gap-2" onclick="toggleAdminDropdown(event)">
+              <i class="fas fa-user-circle"></i>
+              <span class="text-sm font-medium">Administrator</span>
+              <i class="fas fa-chevron-down text-xs"></i>
+            </button>
+            <div id="adminDropdownContent" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+              <a href="../../../tripko-backend/config/confirm_logout.php" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                <i class="fas fa-sign-out-alt w-5"></i>
+                <span class="ml-2">Sign Out</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Action Button -->
+      <!-- Add Terminal removed for view-only Super Admin -->
+      <div class="flex justify-end mt-4 mb-6">
+        <span class="text-sm text-gray-500">View-only mode</span>
+      </div>
+
+      <section>
+        <div class="bg-white rounded-lg shadow overflow-x-auto">
+          <div class="overflow-x-auto">
+            <table class="w-full border-collapse">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="border border-gray-300 px-4 py-2 text-left">Name</th>
+                  <th class="border border-gray-300 px-4 py-2 text-left">Town</th>
+                  <th class="border border-gray-300 px-4 py-2 text-left">Coordinates</th>
+                  <th class="border border-gray-300 px-4 py-2 text-left">Status</th>
+                  <th class="border border-gray-300 px-4 py-2 text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="terminalTableBody">
+                <!-- Rows will be injected here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- Pagination Controls -->
+        <div class="flex justify-center items-center mt-6 mb-6 gap-2" id="tablePagination">
+          <!-- Pagination controls will be added here -->
+        </div>
+      </section>
+
+      <!-- Pagination -->
+      <div id="tablePagination" class="flex justify-center mt-4">
+        <!-- Pagination buttons will be injected here -->
+      </div>
+    </main>
+  </div>
+
+  <!-- Terminal Modal -->
+<div id="terminalModal" class="fixed inset-0 hidden z-50">
+  <div class="bg-black bg-opacity-50 absolute inset-0"></div>
+  <div class="relative flex items-center justify-center min-h-screen p-4">
+    <div class="form-container bg-white relative z-10 p-8 rounded-lg shadow-lg w-full max-w-2xl">
+      <button type="button" class="absolute right-4 top-4 text-gray-500 hover:text-gray-700" onclick="closeTerminalModal()">
+        <i class="fas fa-times text-xl"></i>
+      </button>
+
+      <h2 class="text-xl font-bold mb-4 text-[#255D8A]">Add Terminal</h2>
+      
+      <form id="terminalForm" onsubmit="handleTerminalSubmit(event)">
+        <!-- Terminal Name and Town -->
+        <div class="form-row grid grid-cols-2 gap-4 mb-4">
+          <div class="form-group">
+            <label for="terminal-name" class="block text-[15px] font-medium text-gray-700 mb-1">
+              Terminal Name <span class="text-red-500">*</span>
+            </label>
+            <input type="text" id="terminal-name" name="terminal-name" required 
+                   class="w-full border rounded-md px-2 py-1.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-[#255D8A]">
+          </div>
+          
+          <div class="form-group">
+            <label for="town" class="block text-[15px] font-medium text-gray-700 mb-1">
+              Town <span class="text-red-500">*</span>
+            </label>
+            <input type="text" id="town" name="town" required 
+                   class="w-full border rounded-md px-2 py-1.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-[#255D8A]">
+          </div>
+        </div>
+
+        <!-- Coordinates -->
+        <div class="form-group mb-4">
+          <label for="coordinates" class="block text-[15px] font-medium text-gray-700 mb-1">
+            Coordinates <span class="text-red-500">*</span>
+          </label>
+          <input type="text" id="coordinates" name="coordinates" required 
+                 class="w-full border rounded-md px-2 py-1.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-[#255D8A]"
+                 placeholder="Enter coordinates (e.g., 15.9267, 120.4183)">
+        </div>
+
+        <!-- Form Buttons -->
+        <div class="flex justify-end space-x-2 pt-3 border-t">
+          <button type="button" 
+                  class="px-3 py-1.5 rounded-md bg-gray-200 hover:bg-gray-300 transition-colors text-[15px]" 
+                  onclick="closeTerminalModal()">Cancel</button>
+          <button type="submit" 
+                  class="px-3 py-1.5 rounded-md bg-[#255D8A] text-white hover:bg-[#1e4d70] transition-colors text-[15px]">
+            Save Terminal
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+  <!-- Status Change Modal -->
+<div id="statusModal" class="fixed inset-0 hidden z-50">
+  <div class="bg-black bg-opacity-50 absolute inset-0"></div>
+  <div class="relative flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white relative z-10 p-6 rounded-lg shadow-lg w-full max-w-md">
+      <h3 class="text-lg font-medium mb-4">Update Terminal Status</h3>
+      <p class="mb-4">Current status: <span id="currentStatusText" class="font-medium"></span></p>
+      <div class="flex gap-4">
+        <button onclick="updateTerminalStatus('active')" 
+                class="flex-1 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+          Set Active
+        </button>
+        <button onclick="updateTerminalStatus('inactive')" 
+                class="flex-1 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+          Set Inactive
+        </button>
+      </div>
+      <button onclick="closeStatusModal()" 
+              class="w-full mt-4 py-2 px-4 rounded border border-gray-300 hover:bg-gray-50">
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
+
+  <script>
+let editTerminalId = null;
+let currentTerminalId = null;
+let currentPage = 1;
+const itemsPerPage = 10;
+let allTerminals = [];
+
+function openStatusModal(terminalId, currentStatus) {
+  currentTerminalId = terminalId;
+  const statusText = document.getElementById('currentStatusText');
+  statusText.textContent = currentStatus || 'active';
+  statusText.className = 'font-semibold ' + 
+    (currentStatus === 'inactive' ? 'text-red-600' : 'text-green-600');
+  document.getElementById('statusModal').classList.remove('hidden');
+}
+
+function closeStatusModal() {
+  document.getElementById('statusModal').classList.add('hidden');
+  currentTerminalId = null;
+}
+
+function renderPagination(currentPage, totalPages) {
+  const container = document.getElementById('tablePagination');
+  if (!container) return;
+
+  let html = '';
+  
+  // Previous button
+  html += `
+    <button 
+      onclick="handlePageChange(${currentPage - 1})"
+      class="px-3 py-1 rounded-md text-sm ${currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-[#255D8A] text-white hover:bg-[#1e4d70]'}"
+      ${currentPage === 1 ? 'disabled' : ''}>
+      <i class="fas fa-chevron-left"></i>
+    </button>
+  `;
+
+  // Page numbers
+  for (let i = 1; i <= totalPages; i++) {
+    if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+      html += `
+        <button 
+          onclick="handlePageChange(${i})"
+          class="px-3 py-1 rounded-md text-sm ${i === currentPage ? 'bg-[#255D8A] text-white' : 'bg-gray-100 hover:bg-gray-200'}">
+          ${i}
+        </button>
+      `;
+    } else if (i === currentPage - 2 || i === currentPage + 2) {
+      html += `<span class="px-2">...</span>`;
+    }
+  }
+
+  // Next button
+  html += `
+    <button 
+      onclick="handlePageChange(${currentPage + 1})"
+      class="px-3 py-1 rounded-md text-sm ${currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-[#255D8A] text-white hover:bg-[#1e4d70]'}"
+      ${currentPage === totalPages ? 'disabled' : ''}>
+      <i class="fas fa-chevron-right"></i>
+    </button>
+  `;
+
+  container.innerHTML = html;
+}
+
+// Handle page changes
+function handlePageChange(newPage) {
+  currentPage = newPage;
+  loadTerminals();
+}
+
+async function updateTerminalStatus(newStatus) {
+  console.log('updateTerminalStatus blocked in view-only mode');
+}
+
+async function loadTerminals() {
+  try {
+  const res = await fetch('../../../tripko-backend/api/terminal_locations/read.php');
+    const data = await res.json();
+    
+    // Store all terminals for pagination
+    allTerminals = data.records;
+    
+    // Calculate pagination
+    const totalPages = Math.ceil(allTerminals.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const terminalsToShow = allTerminals.slice(startIndex, endIndex);
+
+    // Render pagination controls
+    renderPagination(currentPage, totalPages);
+    
+    const tbody = document.getElementById('terminalTableBody');
+    tbody.innerHTML = '';
+
+    terminalsToShow.forEach(row => {
+      const statusClass = row.status === 'inactive' ? 'bg-red-50' : '';
+      tbody.innerHTML += `
+        <tr class="${statusClass}">
+          <td class="border border-gray-300 px-4 py-2">${row.name}</td>
+          <td class="border border-gray-300 px-4 py-2">${row.town}</td>
+          <td class="border border-gray-300 px-4 py-2">${row.coordinates}</td>
+          <td class="border border-gray-300 px-4 py-2 text-center">
+            <span class="px-2 py-1 rounded-full text-xs font-medium ${
+              row.status === 'inactive' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+            }">
+              ${row.status || 'active'}
+            </span>
+          </td>
+          <td class="border border-gray-300 px-4 py-2">
+            <div class="flex justify-center gap-2">
+              <span class="text-sm text-gray-600">—</span>
+            </div>
+          </td>
+        </tr>
+      `;
+    });
+  } catch (error) {
+    console.error('Error loading terminals:', error);
+    const tbody = document.getElementById('terminalTableBody');
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" class="text-center py-4">
+          <div class="text-red-500">
+            <i class="fas fa-exclamation-circle text-4xl mb-2"></i>
+            <p>Failed to load terminals</p>
+            <p class="text-sm">${error.message}</p>
+          </div>
+        </td>
+      </tr>
+    `;
+  }
+}
+
+function toggleTransportDropdown(event) {
+    event.preventDefault();
+    const dropdown = document.getElementById('transportDropdown');
+    const icon = document.getElementById('transportDropdownIcon');
+    dropdown.classList.toggle('hidden');
+    icon.style.transform = dropdown.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
+  }
+
+function openTerminalModal() { console.log('openTerminalModal blocked in view-only mode'); }
+function closeTerminalModal() { console.log('closeTerminalModal blocked in view-only mode'); }
+function editTerminal() { console.log('editTerminal blocked in view-only mode'); }
+async function handleTerminalSubmit(event) { event.preventDefault(); console.log('handleTerminalSubmit blocked in view-only mode'); }
+async function deleteTerminal(id) { console.log('deleteTerminal blocked in view-only mode', id); }
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Transport dropdown
+  const transportDropdown = document.getElementById('transportDropdown');
+  const transportDropdownIcon = document.getElementById('transportDropdownIcon');
+
+  // Close dropdown
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#transportDropdown') && !e.target.closest('[onclick*="toggleTransportDropdown"]')) {
+      transportDropdown?.classList.add('hidden');
+      if (transportDropdownIcon) {
+        transportDropdownIcon.style.transform = 'rotate(0deg)';
+      }
+    }
+  });
+
+  // Close admin dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#adminDropdown')) {
+      document.getElementById('adminDropdownContent')?.classList.add('hidden');
+    }
+  });
+
+  // Initialize terminals with pagination
+  loadTerminals();
+});
+
+function toggleAdminDropdown(event) {
+  event.preventDefault();
+  const dropdown = document.getElementById('adminDropdownContent');
+  dropdown.classList.toggle('hidden');
+}
+  </script>
+</body>
+</html>

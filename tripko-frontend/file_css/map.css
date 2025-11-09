@@ -1,0 +1,32 @@
+body,html{margin:0;padding:0;height:100%;font-family:'Inter',system-ui,sans-serif;background:#0f1115;color:#f5f5f7;-webkit-font-smoothing:antialiased}
+#app-root{display:flex;flex-direction:column;height:100%}
+.toolbar{display:flex;gap:1rem;align-items:center;padding:.5rem 1rem;background:#161b22;border-bottom:1px solid #242b33;flex-wrap:wrap}
+.brand{font-weight:600;font-size:1rem;letter-spacing:.5px}
+.search-wrapper{flex:1;min-width:180px}
+.search-wrapper input{width:100%;padding:.55rem .75rem;border:1px solid #2a323c;border-radius:6px;background:#0f1419;color:#f5f5f7;font-size:.9rem}
+.search-wrapper input:focus{outline:2px solid #2563eb}
+.filters{display:flex;gap:.75rem;flex-wrap:wrap;font-size:.75rem}
+.filters label{display:flex;align-items:center;gap:.35rem;background:#1d242c;padding:.35rem .55rem;border-radius:4px;cursor:pointer;border:1px solid #28323c}
+.filters input{accent-color:#2563eb}
+.actions button{background:#1d4ed8;color:#fff;border:none;padding:.5rem .65rem;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;gap:.4rem;font-size:.8rem}
+.actions button:hover{background:#1e40af}
+.actions button.hidden{display:none}
+.content{flex:1;display:flex;min-height:0}
+#map{flex:1;min-height:0}
+#infoPanel{width:300px;max-width:40%;background:#11161c;border-left:1px solid #242b33;display:flex;flex-direction:column}
+@media (max-width:900px){#infoPanel{display:none}}
+.legend,.results,.route-info{padding:.75rem .85rem;border-bottom:1px solid #1e252d}
+.legend{font-size:.7rem;display:flex;flex-direction:column;gap:.35rem}
+.legend-item{display:flex;align-items:center;gap:.4rem}
+.legend-swatch{width:14px;height:14px;border-radius:3px}
+.results{flex:1;overflow:auto;font-size:.75rem}
+.result-item{padding:.4rem .5rem;border:1px solid #1d242c;border-radius:5px;margin-bottom:.4rem;background:#151b22;cursor:pointer}
+.result-item:hover{background:#1b232c}
+.popup{font-family:'Inter',sans-serif;font-size:.75rem}
+.popup h3{margin:.2rem 0;font-size:.85rem}
+.popup img{max-width:180px;max-height:120px;display:block;border-radius:6px;margin:.35rem 0;object-fit:cover}
+.navigate-btn{background:#2563eb;color:#fff;border:none;padding:.4rem .55rem;border-radius:4px;font-size:.7rem;cursor:pointer}
+.navigate-btn:hover{background:#1e4fc1}
+.footer{padding:.4rem .75rem;font-size:.6rem;background:#161b22;border-top:1px solid #242b33;text-align:center}
+.route-info{font-size:.7rem;line-height:1.2}
+.route-info.hidden{display:none}

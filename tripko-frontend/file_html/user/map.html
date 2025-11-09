@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Discover Pangasinan - Interactive Travel Map</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <link href="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.css" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: 'Inter', system-ui, sans-serif; 
+      background: #f8fafc; 
+      color: #1e293b;
+      line-height: 1.5;
+    }
+    
+    /* Header */
+    .header {
+      background: #fff;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 1rem 0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .header-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+    .brand {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #0f766e;
+      text-decoration: none;
+    }
+    .search-hero {
+      flex: 1;
+      max-width: 600px;
+      position: relative;
+    }
+    .search-input {
+      width: 100%;
+      padding: 1rem 1rem 1rem 3rem;
+      border: 2px solid #e2e8f0;
+      border-radius: 50px;
+      font-size: 1rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      background: #fff;
+    }
+    .search-input:focus {
+      outline: none;
+      border-color: #0f766e;
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
+    }
+    .search-icon {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #64748b;
+      font-size: 1.2rem;
+    }
+    .user-actions {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+    .action-btn {
+      padding: 0.75rem 1.5rem;
+      border: 2px solid #0f766e;
+      background: transparent;
+      color: #0f766e;
+      border-radius: 25px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .action-btn:hover, .action-btn.primary {
+      background: #0f766e;
+      color: #fff;
+    }
+    
+    /* Main Layout */
+    .main-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 400px 1fr;
+      height: calc(100vh - 120px);
+      background: #fff;
+      border-radius: 12px;
+      margin-top: 2rem;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    
+    /* Left Sidebar */
+    .sidebar {
+      border-right: 1px solid #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+    }
+    
+    .filters-section {
+      padding: 1.5rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .filters-title {
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: #1e293b;
+    }
+    .filter-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .filter-chip {
+      padding: 0.5rem 1rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: #fff;
+    }
+    .filter-chip.active {
+      background: #0f766e;
+      color: #fff;
+      border-color: #0f766e;
+    }
+    .filter-chip:hover {
+      border-color: #0f766e;
+    }
+    .count-badge {
+      margin-left: 0.5rem;
+      background: rgba(255,255,255,0.2);
+      padding: 0.125rem 0.375rem;
+      border-radius: 10px;
+      font-size: 0.75rem;
+    }
+    
+    .results-header {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .results-count {
+      font-weight: 600;
+      color: #1e293b;
+    }
+    .sort-dropdown {
+      border: 1px solid #e2e8f0;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-size: 0.875rem;
+    }
+    
+    .results-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.5rem;
+    }
+    .result-card {
+      padding: 1rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: #fff;
+    }
+    .result-card:hover {
+      border-color: #0f766e;
+      box-shadow: 0 2px 8px rgba(15, 118, 110, 0.1);
+    }
+    .card-image {
+      width: 100%;
+      height: 120px;
+      border-radius: 6px;
+      object-fit: cover;
+      margin-bottom: 0.75rem;
+      background: #f1f5f9;
+    }
+    .card-title {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+      color: #1e293b;
+    }
+    .card-location {
+      color: #64748b;
+      font-size: 0.875rem;
+      margin-bottom: 0.5rem;
+    }
+    .card-description {
+      color: #475569;
+      font-size: 0.875rem;
+      line-height: 1.4;
+    }
+    .card-category {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      background: #e0f2fe;
+      color: #0369a1;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      margin-top: 0.5rem;
+    }
+    
+    /* Right Map */
+    .map-container {
+      position: relative;
+      background: #f8fafc;
+    }
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+    
+    .map-overlay {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      z-index: 1000;
+    }
+    .map-btn {
+      padding: 0.75rem;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: all 0.2s;
+    }
+    .map-btn:hover {
+      background: #f8fafc;
+    }
+    
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+      .main-container {
+        grid-template-columns: 1fr;
+        margin: 1rem;
+      }
+      .header-content {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 0 1rem;
+      }
+      .search-hero {
+        max-width: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-content">
+      <a href="homepage-enhanced.php" class="brand">
+        TripKo Pangasinan
+      </a>
+      <div class="search-hero">
+        <i class="fas fa-search search-icon"></i>
+        <input 
+          id="searchInput" 
+          type="text" 
+          class="search-input"
+          placeholder="Search tourist spots, festivals, hotels..."
+          autocomplete="off"
+        />
+        <div id="searchDropdown" class="search-dropdown"></div>
+      </div>
+      <div class="user-actions">
+        <button id="locateBtn" class="action-btn">
+          <i class="fas fa-location-dot"></i> Find Me
+        </button>
+        <button id="clearRouteBtn" class="action-btn primary hidden">
+          <i class="fas fa-times"></i> Clear Route
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="main-container">
+    <div class="sidebar">
+      <div class="filters-section">
+        <h3 class="filters-title">Filter by Category</h3>
+        <div class="filter-chips" id="filterChips">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+      
+      <div class="results-header">
+        <span class="results-count" id="resultsCount">Loading...</span>
+        <select class="sort-dropdown" id="sortSelect">
+          <option value="name">Sort by Name</option>
+          <option value="distance">Sort by Distance</option>
+          <option value="category">Sort by Category</option>
+        </select>
+      </div>
+      
+      <div class="results-list" id="resultsList">
+        <!-- Dynamically populated -->
+      </div>
+    </div>
+
+    <div class="map-container">
+      <div id="map"></div>
+      <div class="map-overlay">
+        <button class="map-btn" id="zoomInBtn" title="Zoom In">
+          <i class="fas fa-plus"></i>
+        </button>
+        <button class="map-btn" id="zoomOutBtn" title="Zoom Out">
+          <i class="fas fa-minus"></i>
+        </button>
+        <button class="map-btn" id="fullscreenBtn" title="Toggle Fullscreen">
+          <i class="fas fa-expand"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.js"></script>
+  <script src="../file_js/map-enhanced.js" type="module"></script>
+</body>
+</html>

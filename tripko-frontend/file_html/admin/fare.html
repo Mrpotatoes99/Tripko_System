@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TripKo Pangasinan - Fare Management</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+  <link rel="stylesheet" href="../../file_css/dashboard.css" />
+   <link rel="stylesheet" href="../file_css/tourist_spot.css" /> 
+
+
+  <style>
+    body {
+      font-family: 'poppins';
+      font-size: 17px;
+    }
+
+    .nav-links a,
+    .font-medium,
+    button,
+    select,
+    input,
+    p,
+    h1, h2, h3, h4, h5, h6 {
+        font-family: 'poppins';
+    }
+
+    canvas#transportChart {
+      width: 100% !important;
+      height: 100% !important;
+      position: absolute !important;
+      top: 0;
+      left: 0;
+    }
+  </style>
+  <script>
+    // Global variables
+    let terminals = [];
+    let transportTypes = [];
+    let fares = [];
+    let editFareId = null;
+    let currentFareId = null;
+    let currentPage = 1;
+    const itemsPerPage = 10;
+    let allFares = [];
+
+    // Load terminals from API
+    async function loadTerminals() {
+      try {
+  const response = await fetch('../../../tripko-backend/api/terminal_locations/read.php');
+        const data = await response.json();
+        terminals = data.records;
+        
+        // Update terminal dropdowns
+        const fromSelect = document.getElementById('from-terminal');
+        const toSelect = document.getElementById('to-terminal');
+        fromSelect.innerHTML = '<option value="" disabled selected>Select terminal</option>';
+        toSelect.innerHTML = '<option value="" disabled selected>Select terminal</option>';
+        
+        terminals.forEach(terminal => {
+          const option = `<option value="${terminal.terminal_id}">${terminal.name} (${terminal.town})</option>`;
+          fromSelect.insertAdjacentHTML('beforeend', option);
+          toSelect.insertAdjacentHTML('beforeend', option);
+        });
+      } catch (error) {
+        console.error('Error loading terminals:', error);
+        alert('Failed to load terminals');
+      }
+    }
+
+    // Load transport types from API
+    async function loadTransportTypes() {
+      try {
+  const response = await fetch('../../../tripko-backend/api/transportation_type/read.php');
+        const data = await response.json();
+        transportTypes = data.records;
+        
+        // Update transport type dropdown
+        const select = document.getElementById('transport-type');
+        select.innerHTML = '<option value="" disabled selected>Select type</option>';
+        transportTypes.forEach(type => {
+          select.insertAdjacentHTML('beforeend', `<option value="${type.transport_type_id}">${type.type}</option>`);
+        });
+      } catch (error) {
+        console.error('Error loading transport types:', error);
+        alert('Failed to load transport types');
+      }
+    }
+
+    // Function to render pagination controls
+    function renderPagination(currentPage, totalPages) {
+      const container = document.getElementById('tablePagination');
+      if (!container) return;
+
+      let html = '';
+      
+      // Previous button
+      html += `
+        <button 
+          onclick="handlePageChange(${currentPage - 1})"
+          class="px-3 py-1 rounded-md text-sm ${currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-[#255D8A] text-white hover:bg-[#1e4d70]'}"
+          ${currentPage === 1 ? 'disabled' : ''}>
+          <i class="fas fa-chevron-left"></i>
+        </button>
+      `;
+
+      // Page numbers
+      for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+          html += `
+            <button 
+              onclick="handlePageChange(${i})"
+              class="px-3 py-1 rounded-md text-sm ${i === currentPage ? 'bg-[#255D8A] text-white' : 'bg-gray-100 hover:bg-gray-200'}">
+              ${i}
+            </button>
+          `;
+        } else if (i === currentPage - 2 || i === currentPage + 2) {
+          html += `<span class="px-2">...</span>`;
+        }
+      }
+
+      // Next button
+      html += `
+        <button 
+          onclick="handlePageChange(${currentPage + 1})"
+          class="px-3 py-1 rounded-md text-sm ${currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-[#255D8A] text-white hover:bg-[#1e4d70]'}"
+          ${currentPage === totalPages ? 'disabled' : ''}>
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      `;
+
+      container.innerHTML = html;
+    }
+
+    // Handle page changes
+    function handlePageChange(newPage) {
+      currentPage = newPage;
+      loadFares();
+    }
+
+    // Load fares from API
+    async function loadFares() {
+      try {
+        console.log('Fetching fares...');
+  const response = await fetch('../../../tripko-backend/api/fares/read.php');
+        console.log('Response received:', response);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Fares data:', data);
+        
+        const tableBody = document.getElementById('fareTableBody');
+        tableBody.innerHTML = '';
+
+        if (data.records && Array.isArray(data.records)) {
+          // Store all fares for pagination
+          allFares = data.records;
+          
+          // Calculate pagination
+          const totalPages = Math.ceil(allFares.length / itemsPerPage);
+          const startIndex = (currentPage - 1) * itemsPerPage;
+          const endIndex = startIndex + itemsPerPage;
+          const faresToShow = allFares.slice(startIndex, endIndex);
+
+          // Render pagination controls
+          renderPagination(currentPage, totalPages);
+
+          // Render current page items
+          faresToShow.forEach(fare => {
+            const row = `
+              <tr class="${fare.status === 'inactive' ? 'bg-red-50' : ''}">
+                <td class="border border-gray-300 px-4 py-2">${fare.from_terminal_name} (${fare.from_town})</td>
+                <td class="border border-gray-300 px-4 py-2">${fare.to_terminal_name} (${fare.to_town})</td>
+                <td class="border border-gray-300 px-4 py-2">${fare.transport_type_name}</td>
+                <td class="border border-gray-300 px-4 py-2">${fare.category}</td>
+                <td class="border border-gray-300 px-4 py-2">₱${parseFloat(fare.amount).toFixed(2)}</td>
+                <td class="border border-gray-300 px-4 py-2">
+                  <span class="px-2 py-1 rounded-full text-xs font-medium ${
+                    fare.status === 'inactive' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                  }">
+                    ${fare.status || 'active'}
+                  </span>
+                </td>
+                <td class="border border-gray-300 px-4 py-2">
+                  <div class="flex justify-center gap-2">
+                    <span class="text-sm text-gray-600">—</span>
+                  </div>
+                </td>
+              </tr>
+            `;
+            tableBody.innerHTML += row;
+          });
+        } else {
+          tableBody.innerHTML = `
+            <tr>
+              <td colspan="7" class="text-center py-4">
+                <div class="text-gray-500">
+                  <i class="fas fa-info-circle text-4xl mb-2"></i>
+                  <p>No fares available</p>
+                </div>
+              </td>
+            </tr>
+          `;
+        }
+      } catch (error) {
+        console.error('Error loading fares:', error);
+        const tableBody = document.getElementById('fareTableBody');
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="7" class="text-center py-4">
+              <div class="text-red-500">
+                <i class="fas fa-exclamation-circle text-4xl mb-2"></i>
+                <p>Failed to load fares</p>
+                <p class="text-sm">${error.message}</p>
+              </div>
+            </td>
+          </tr>
+        `;
+      }
+    }
+
+    // Modal functions
+  // Write-related functions stubbed for view-only Super Admin
+  function openFareModal() { console.log('openFareModal blocked in view-only mode'); }
+  function closeFareModal() { console.log('closeFareModal blocked in view-only mode'); }
+  function openStatusModal() { console.log('openStatusModal blocked in view-only mode'); }
+  function closeStatusModal() { console.log('closeStatusModal blocked in view-only mode'); }
+  async function updateFareStatus() { console.log('updateFareStatus blocked in view-only mode'); }
+
+    function toggleTransportDropdown(event) {
+      event.preventDefault();
+      const dropdown = document.getElementById('transportDropdown');
+      const icon = document.getElementById('transportDropdownIcon');
+      dropdown.classList.toggle('hidden');
+      icon.style.transform = dropdown.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
+    }
+
+    async function handleFareSubmit(event) {
+      event.preventDefault();
+      console.log('handleFareSubmit blocked in view-only mode');
+    }
+
+    async function editFare(fareId) {
+      console.log('editFare blocked in view-only mode', fareId);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Close admin dropdown when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('#adminDropdown')) {
+          document.getElementById('adminDropdownContent')?.classList.add('hidden');
+        }
+      });
+
+      loadFares();
+    });
+
+    function toggleAdminDropdown(event) {
+      event.preventDefault();
+      const dropdown = document.getElementById('adminDropdownContent');
+      dropdown.classList.toggle('hidden');
+    }
+  </script>
+</head>
+<body class="bg-white text-gray-900">
+  <div class="flex min-h-screen">
+  <!-- Sidebar -->
+  <?php include __DIR__ . '/includes/sidebar.php'; ?>
+
+    <!-- Main content -->
+    <main class="flex-1 bg-[#F3F1E7] p-6">
+      <header class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-3 text-gray-900 font-normal text-base">
+          <button aria-label="Menu" class="focus:outline-none">
+            <i class="fas fa-bars text-lg"></i>
+          </button>
+          <span>Fare Management</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <div>
+            <input type="search" placeholder="Search fares" class="w-48 md:w-64 rounded-full border border-gray-400 bg-[#F3F1E7] py-1.5 px-4 text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#255D8A]" />
+          </div>
+          <div class="relative" id="adminDropdown">
+            <button aria-label="Admin Profile" class="text-black text-xl focus:outline-none flex items-center gap-2" onclick="toggleAdminDropdown(event)">
+              <i class="fas fa-user-circle"></i>
+              <span class="text-sm font-medium">Administrator</span>
+              <i class="fas fa-chevron-down text-xs"></i>
+            </button>
+            <div id="adminDropdownContent" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+              <a href="../../../tripko-backend/config/confirm_logout.php" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                <i class="fas fa-sign-out-alt w-5"></i>
+                <span class="ml-2">Sign Out</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Action Button -->
+      <!-- Add New Fare removed for view-only Super Admin -->
+      <div class="flex justify-end mt-4 mb-6">
+        <span class="text-sm text-gray-500">View-only mode</span>
+      </div>
+
+      <!-- Fare Management Section -->
+      <section>
+
+        <!-- Fare Table -->
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+          <table class="w-full border-collapse">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="border border-gray-300 px-4 py-2 text-left">From Terminal</th>
+                <th class="border border-gray-300 px-4 py-2 text-left">To Terminal</th>
+                <th class="border border-gray-300 px-4 py-2 text-left">Transport Type</th>
+                <th class="border border-gray-300 px-4 py-2 text-left">Category</th>
+                <th class="border border-gray-300 px-4 py-2 text-left">Fare Amount</th>
+                <th class="border border-gray-300 px-4 py-2 text-left">Status</th>
+                <th class="border border-gray-300 px-4 py-2 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="fareTableBody">
+              <!-- Data will be injected here -->
+            </tbody>
+          </table>
+        </div>
+        <!-- Pagination Controls -->
+        <div class="flex justify-center items-center mt-6 mb-6 gap-2" id="tablePagination">
+          <!-- Pagination controls will be added here -->
+        </div>
+        <style>
+        section {
+    margin: 2rem auto;
+    max-width: 1000px;
+    font-family: 'Poppins';
+  }
+
+  .bg-white {
+    background-color: #fff;
+  }
+
+  .rounded-lg {
+    border-radius: 12px;
+  }
+
+  .shadow {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .overflow-hidden {
+    overflow: hidden;
+  }
+
+  table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+  }
+
+  th,
+  td {
+    border: 1px solid #e2e8f0;
+    padding: 16px;
+    text-align: left;
+    font-size: 14px;
+    height: 60px;
+    word-wrap: break-word;
+    vertical-align: middle;
+  }
+
+  th {
+    font-weight: 500;
+    background-color: #BBDEFB;
+    color: #0d47a1;
+  }
+
+  /* Column widths for 7 columns */
+  th:nth-child(1), td:nth-child(1) { width: 14%; } /* From Terminal */
+  th:nth-child(2), td:nth-child(2) { width: 14%; } /* To Terminal */
+  th:nth-child(3), td:nth-child(3) { width: 15%; } /* Transport Type */
+  th:nth-child(4), td:nth-child(4) { width: 14%; } /* Category */
+  th:nth-child(5), td:nth-child(5) { width: 14%; } /* Fare Amount */
+  th:nth-child(6), td:nth-child(6) { width: 10%; } /* Status */
+  th:nth-child(7), td:nth-child(7) { width: 19%; text-align:justify; } /* Actions */
+
+  tbody tr:nth-child(odd) {
+    background-color: #ffffff;
+  }
+
+  tbody tr:nth-child(even) {
+    background-color: #f9fafb;
+  }
+
+  tbody tr:hover {
+    background-color: #f1f5f9;
+    transition: background-color 0.3s ease;
+  }
+
+  .text-center {
+    text-align: center;
+  }
+
+  .action-btn {
+    background-color: #3b82f6;
+    color: #fff;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background-color 0.2s ease;
+  }
+
+  .action-btn:hover {
+    background-color: #2563eb;
+  }
+</style>
+
+      </section>
+    </main>
+  </div>
+
+  <!-- Fare Modal -->
+<div id="fareModal" class="fixed inset-0 hidden z-50">
+  <div class="bg-black bg-opacity-50 absolute inset-0 backdrop-blur-sm"></div>
+  <div class="relative flex items-center justify-center min-h-screen p-4">
+    <div class="form-container bg-white relative z-10 p-8 rounded-lg shadow-lg w-full max-w-2xl">
+      <button type="button" class="absolute right-4 top-4 text-gray-500 hover:text-gray-700" onclick="closeFareModal()">
+        <i class="fas fa-times text-xl"></i>
+      </button>
+
+      <h2 class="text-xl font-bold mb-6 text-[#255D8A]">Add Fare</h2>
+      
+
+      <form id="fareForm" onsubmit="handleFareSubmit(event)">
+        <!-- From and To Terminal -->
+        <div class="form-row grid grid-cols-2 gap-6 mb-6">
+          <div class="form-group">
+            <label for="from-terminal" class="block text-[15px] font-medium text-gray-700 mb-2">
+              From Terminal <span class="text-red-500">*</span>
+            </label>
+            <select id="from-terminal" required 
+                    class="w-full border rounded-md px-3 py-2 text-[15px] focus:outline-none focus:ring-2 focus:ring-[#255D8A]">
+              <option value="" disabled selected>Select terminal</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="to-terminal" class="block text-[15px] font-medium text-gray-700 mb-2">
+              To Terminal <span class="text-red-500">*</span>
+            </label>
+            <select id="to-terminal" required 
+                    class="w-full border rounded-md px-3 py-2 text-[15px] focus:outline-none focus:ring-2 focus:ring-[#255D8A]">
+              <option value="" disabled selected>Select terminal</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Transport Type and Category -->
+        <div class="form-row grid grid-cols-2 gap-6 mb-6">
+          <div class="form-group">
+            <label for="transport-type" class="block text-[15px] font-medium text-gray-700 mb-2">
+              Transport Type <span class="text-red-500">*</span>
+            </label>
+            <select id="transport-type" required 
+                    class="w-full border rounded-md px-3 py-2 text-[15px] focus:outline-none focus:ring-2 focus:ring-[#255D8A]">
+              <option value="" disabled selected>Select type</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="category" class="block text-[15px] font-medium text-gray-700 mb-2">
+              Category <span class="text-red-500">*</span>
+            </label>
+            <select id="category" required 
+                    class="w-full border rounded-md px-3 py-2 text-[15px] focus:outline-none focus:ring-2 focus:ring-[#255D8A]">
+              <option value="" disabled selected>Select category</option>
+              <option value="Regular">Regular</option>
+              <option value="Student">Student</option>
+              <option value="Senior">Senior</option>
+              <option value="PWD">PWD</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Fare Amount -->
+        <div class="form-group mb-6">
+          <label for="fare-amount" class="block text-[15px] font-medium text-gray-700 mb-2">
+            Estimated Fare <span class="text-red-500">*</span>
+          </label>
+          <input type="number" id="fare-amount" step="0.01" required 
+                 class="w-full border rounded-md px-3 py-2 text-[15px] focus:outline-none focus:ring-2 focus:ring-[#255D8A]"
+                 placeholder="Enter fare amount">
+        </div>
+
+        <!-- Form Buttons -->
+        <div class="flex justify-end space-x-2 pt-4 border-t border-gray-200">
+          <button type="button" 
+                  class="px-6 py-2 rounded-md bg-gray-200 hover:bg-gray-300 transition-colors text-[15px]" 
+                  onclick="closeFareModal()">Cancel</button>
+          <button type="submit" 
+                  class="px-6 py-2 rounded-md bg-[#255D8A] text-white hover:bg-[#1e4d70] transition-colors text-[15px] font-medium">
+            Save
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Status Change Modal -->
+  <div id="statusModal" class="fixed inset-0 hidden z-50">
+    <div class="bg-black bg-opacity-50 absolute inset-0 backdrop-blur-sm"></div>
+    <div class="relative flex items-center justify-center min-h-screen p-4">
+      <div class="bg-white relative z-10 p-8 rounded-lg shadow-lg w-full max-w-md">
+        <h3 class="text-xl font-bold mb-4 text-[#255D8A]">Change Status</h3>
+        <p class="mb-4">Current status: <span id="currentStatusText" class="font-semibold"></span></p>
+        <div class="space-y-3">
+          <button onclick="updateFareStatus('active')" 
+                  class="w-full py-2 px-4 rounded-md bg-green-600 text-white hover:bg-green-700 transition-colors text-[15px]">
+            Set Active
+          </button>
+          <button onclick="updateFareStatus('inactive')" 
+                  class="w-full py-2 px-4 rounded-md bg-red-600 text-white hover:bg-red-700 transition-colors text-[15px]">
+            Set Inactive
+          </button>
+          <button onclick="closeStatusModal()" 
+                  class="w-full py-2 px-4 rounded-md bg-gray-200 hover:bg-gray-300 transition-colors text-[15px]">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

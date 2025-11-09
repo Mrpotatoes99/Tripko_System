@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Profile - TripKo Pangasinan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: 'Inter', system-ui, sans-serif; 
+      line-height: 1.6; 
+      color: #1a1a1a;
+      background: #f8fafc;
+    }
+
+    /* Header */
+    .header {
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .nav {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 70px;
+    }
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #00a6b8;
+      text-decoration: none;
+    }
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+    }
+    .nav-links a {
+      text-decoration: none;
+      color: #374151;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover {
+      color: #00a6b8;
+    }
+    .user-menu {
+      position: relative;
+    }
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #00a6b8, #0f766e);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 3rem;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      height: fit-content;
+      position: sticky;
+      top: 100px;
+    }
+    .profile-header {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .profile-avatar {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #00a6b8, #0f766e);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 2rem;
+      margin: 0 auto 1rem;
+    }
+    .profile-name {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 0.5rem;
+    }
+    .profile-stats {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 1rem;
+    }
+    .stat {
+      text-align: center;
+    }
+    .stat-number {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #00a6b8;
+    }
+    .stat-label {
+      color: #64748b;
+      font-size: 0.875rem;
+    }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      margin: 0.5rem 0;
+      border-radius: 12px;
+      text-decoration: none;
+      color: #64748b;
+      font-weight: 500;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .menu-item:hover, .menu-item.active {
+      background: #f0fdff;
+      color: #00a6b8;
+    }
+    .menu-icon {
+      width: 20px;
+      text-align: center;
+    }
+
+    /* Main Content */
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+    .content-section {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+    }
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1e293b;
+    }
+    .btn-primary {
+      padding: 0.75rem 1.5rem;
+      background: linear-gradient(135deg, #00a6b8, #0f766e);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0,166,184,0.3);
+    }
+    .btn-secondary {
+      padding: 0.75rem 1.5rem;
+      background: white;
+      color: #00a6b8;
+      border: 2px solid #00a6b8;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .btn-secondary:hover {
+      background: #00a6b8;
+      color: white;
+    }
+
+    /* Dashboard Cards */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+    .dashboard-card {
+      background: linear-gradient(135deg, #00a6b8, #0f766e);
+      color: white;
+      padding: 2rem;
+      border-radius: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+    .dashboard-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 100px;
+      height: 100px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 50%;
+      transform: translate(30px, -30px);
+    }
+    .card-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      opacity: 0.9;
+    }
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      opacity: 0.9;
+    }
+    .card-value {
+      font-size: 2rem;
+      font-weight: 800;
+    }
+
+    /* Itineraries */
+    .itinerary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+    .itinerary-card {
+      border: 2px solid #f1f5f9;
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    .itinerary-card:hover {
+      border-color: #00a6b8;
+      transform: translateY(-4px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+    .itinerary-image {
+      height: 200px;
+      background-size: cover;
+      background-position: center;
+      position: relative;
+    }
+    .itinerary-badge {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      background: rgba(0,166,184,0.9);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+    .itinerary-content {
+      padding: 1.5rem;
+    }
+    .itinerary-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 0.5rem;
+    }
+    .itinerary-meta {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      color: #64748b;
+      font-size: 0.875rem;
+      margin-bottom: 1rem;
+    }
+    .itinerary-description {
+      color: #475569;
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+    .itinerary-actions {
+      display: flex;
+      gap: 0.75rem;
+    }
+    .action-btn {
+      padding: 0.5rem 1rem;
+      border: 1px solid #e2e8f0;
+      background: white;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .action-btn:hover {
+      border-color: #00a6b8;
+      color: #00a6b8;
+    }
+
+    /* Saved Places */
+    .saved-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .saved-card {
+      border: 2px solid #f1f5f9;
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    .saved-card:hover {
+      border-color: #00a6b8;
+      transform: translateY(-4px);
+    }
+    .saved-image {
+      height: 160px;
+      background-size: cover;
+      background-position: center;
+      position: relative;
+    }
+    .remove-btn {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      width: 32px;
+      height: 32px;
+      background: rgba(239,68,68,0.9);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .remove-btn:hover {
+      background: #dc2626;
+    }
+    .saved-content {
+      padding: 1rem;
+    }
+    .saved-title {
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 0.5rem;
+    }
+    .saved-location {
+      color: #64748b;
+      font-size: 0.875rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Reviews */
+    .review-card {
+      border: 2px solid #f1f5f9;
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      transition: all 0.2s;
+    }
+    .review-card:hover {
+      border-color: #e2e8f0;
+    }
+    .review-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+    .review-place {
+      font-weight: 700;
+      color: #1e293b;
+    }
+    .review-rating {
+      color: #fbbf24;
+      font-size: 1.1rem;
+    }
+    .review-text {
+      color: #475569;
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+    .review-date {
+      color: #64748b;
+      font-size: 0.875rem;
+    }
+
+    /* Empty States */
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #64748b;
+    }
+    .empty-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+    .empty-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    .empty-description {
+      margin-bottom: 2rem;
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal.show {
+      display: flex;
+    }
+    .modal-content {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      max-width: 500px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+    }
+    .modal-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1e293b;
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #64748b;
+    }
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    .form-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #374151;
+    }
+    .form-input, .form-textarea {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: all 0.2s;
+    }
+    .form-input:focus, .form-textarea:focus {
+      outline: none;
+      border-color: #00a6b8;
+      box-shadow: 0 0 0 3px rgba(0,166,184,0.1);
+    }
+    .form-textarea {
+      resize: vertical;
+      min-height: 120px;
+    }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+      .container {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        padding: 1rem;
+      }
+      .sidebar {
+        position: static;
+      }
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+      .itinerary-grid, .saved-grid {
+        grid-template-columns: 1fr;
+      }
+      .nav-links {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <nav class="nav">
+      <a href="/tripko-system/tripko-frontend/file_html/user/homepage-new.html" class="logo">TripKo</a>
+      <div class="nav-links">
+        <a href="/tripko-system/tripko-frontend/file_html/user/search.html">Search</a>
+        <a href="/tripko-system/tripko-frontend/file_html/user/map.html">Explore Map</a>
+        <a href="#" onclick="showSection('itineraries')">My Trips</a>
+      </div>
+      <div class="user-menu">
+        <div class="user-avatar">JD</div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Container -->
+  <div class="container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="profile-header">
+        <div class="profile-avatar">JD</div>
+        <div class="profile-name">John Doe</div>
+        <div class="profile-stats">
+          <div class="stat">
+            <div class="stat-number">12</div>
+            <div class="stat-label">Trips</div>
+          </div>
+          <div class="stat">
+            <div class="stat-number">48</div>
+            <div class="stat-label">Places</div>
+          </div>
+          <div class="stat">
+            <div class="stat-number">6</div>
+            <div class="stat-label">Reviews</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="menu-item active" onclick="showSection('dashboard')">
+        <i class="fas fa-chart-line menu-icon"></i>
+        <span>Dashboard</span>
+      </div>
+      <div class="menu-item" onclick="showSection('itineraries')">
+        <i class="fas fa-route menu-icon"></i>
+        <span>My Itineraries</span>
+      </div>
+      <div class="menu-item" onclick="showSection('saved')">
+        <i class="fas fa-heart menu-icon"></i>
+        <span>Saved Places</span>
+      </div>
+      <div class="menu-item" onclick="showSection('reviews')">
+        <i class="fas fa-star menu-icon"></i>
+        <span>My Reviews</span>
+      </div>
+      <div class="menu-item" onclick="showSection('settings')">
+        <i class="fas fa-cog menu-icon"></i>
+        <span>Settings</span>
+      </div>
+      <div class="menu-item" onclick="logout()">
+        <i class="fas fa-sign-out-alt menu-icon"></i>
+        <span>Logout</span>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Dashboard Section -->
+      <div id="dashboard-section" class="content-section">
+        <div class="section-header">
+          <h2 class="section-title">Welcome back, John!</h2>
+          <a href="/tripko-system/tripko-frontend/file_html/user/map.html" class="btn-primary">
+            <i class="fas fa-plus"></i>
+            Plan New Trip
+          </a>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="dashboard-card">
+            <i class="fas fa-map-marked-alt card-icon"></i>
+            <div class="card-title">Places Visited</div>
+            <div class="card-value">48</div>
+          </div>
+          <div class="dashboard-card">
+            <i class="fas fa-route card-icon"></i>
+            <div class="card-title">Trip Itineraries</div>
+            <div class="card-value">12</div>
+          </div>
+          <div class="dashboard-card">
+            <i class="fas fa-camera card-icon"></i>
+            <div class="card-title">Photos Shared</div>
+            <div class="card-value">156</div>
+          </div>
+          <div class="dashboard-card">
+            <i class="fas fa-star card-icon"></i>
+            <div class="card-title">Reviews Written</div>
+            <div class="card-value">6</div>
+          </div>
+        </div>
+
+        <div class="section-header">
+          <h3 class="section-title">Recent Activity</h3>
+          <a href="#" class="view-all-btn">View All</a>
+        </div>
+        
+        <!-- Recent activity will be populated here -->
+        <div style="background: #f8fafc; border-radius: 12px; padding: 2rem; text-align: center; color: #64748b;">
+          <i class="fas fa-clock" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+          <p>Your recent activity will appear here</p>
+        </div>
+      </div>
+
+      <!-- Itineraries Section -->
+      <div id="itineraries-section" class="content-section" style="display: none;">
+        <div class="section-header">
+          <h2 class="section-title">My Itineraries</h2>
+          <button class="btn-primary" onclick="showCreateItineraryModal()">
+            <i class="fas fa-plus"></i>
+            Create New Itinerary
+          </button>
+        </div>
+
+        <div class="itinerary-grid" id="itinerariesGrid">
+          <!-- Sample itineraries -->
+          <div class="itinerary-card">
+            <div class="itinerary-image" style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')">
+              <div class="itinerary-badge">3 Days</div>
+            </div>
+            <div class="itinerary-content">
+              <h3 class="itinerary-title">Pangasinan Beach Adventure</h3>
+              <div class="itinerary-meta">
+                <span><i class="fas fa-calendar"></i> Mar 15-17, 2025</span>
+                <span><i class="fas fa-map-marker-alt"></i> 5 Places</span>
+              </div>
+              <p class="itinerary-description">Explore the beautiful beaches and islands of Pangasinan including Hundred Islands and Bolinao.</p>
+              <div class="itinerary-actions">
+                <button class="action-btn"><i class="fas fa-eye"></i> View</button>
+                <button class="action-btn"><i class="fas fa-edit"></i> Edit</button>
+                <button class="action-btn"><i class="fas fa-share"></i> Share</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="itinerary-card">
+            <div class="itinerary-image" style="background-image: url('https://images.unsplash.com/photo-1539650116574-75c0c6d9d8d6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')">
+              <div class="itinerary-badge">2 Days</div>
+            </div>
+            <div class="itinerary-content">
+              <h3 class="itinerary-title">Cultural Heritage Tour</h3>
+              <div class="itinerary-meta">
+                <span><i class="fas fa-calendar"></i> Apr 5-6, 2025</span>
+                <span><i class="fas fa-map-marker-alt"></i> 8 Places</span>
+              </div>
+              <p class="itinerary-description">Discover the rich history and culture of Pangasinan through its churches, museums, and heritage sites.</p>
+              <div class="itinerary-actions">
+                <button class="action-btn"><i class="fas fa-eye"></i> View</button>
+                <button class="action-btn"><i class="fas fa-edit"></i> Edit</button>
+                <button class="action-btn"><i class="fas fa-share"></i> Share</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Saved Places Section -->
+      <div id="saved-section" class="content-section" style="display: none;">
+        <div class="section-header">
+          <h2 class="section-title">Saved Places</h2>
+          <a href="/tripko-system/tripko-frontend/file_html/user/map.html" class="btn-secondary">
+            <i class="fas fa-search"></i>
+            Discover More
+          </a>
+        </div>
+
+        <div class="saved-grid" id="savedGrid">
+          <!-- Sample saved places -->
+          <div class="saved-card">
+            <div class="saved-image" style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')">
+              <button class="remove-btn" onclick="removeSavedPlace(this)">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <div class="saved-content">
+              <h3 class="saved-title">Hundred Islands National Park</h3>
+              <div class="saved-location">
+                <i class="fas fa-map-marker-alt"></i>
+                Alaminos, Pangasinan
+              </div>
+            </div>
+          </div>
+
+          <div class="saved-card">
+            <div class="saved-image" style="background-image: url('https://images.unsplash.com/photo-1551632811-561732d1e306?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')">
+              <button class="remove-btn" onclick="removeSavedPlace(this)">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <div class="saved-content">
+              <h3 class="saved-title">Bolinao Beach</h3>
+              <div class="saved-location">
+                <i class="fas fa-map-marker-alt"></i>
+                Bolinao, Pangasinan
+              </div>
+            </div>
+          </div>
+
+          <div class="saved-card">
+            <div class="saved-image" style="background-image: url('https://images.unsplash.com/photo-1528728329032-2972f65dfb3f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')">
+              <button class="remove-btn" onclick="removeSavedPlace(this)">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <div class="saved-content">
+              <h3 class="saved-title">Lingayen Beach</h3>
+              <div class="saved-location">
+                <i class="fas fa-map-marker-alt"></i>
+                Lingayen, Pangasinan
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reviews Section -->
+      <div id="reviews-section" class="content-section" style="display: none;">
+        <div class="section-header">
+          <h2 class="section-title">My Reviews</h2>
+          <button class="btn-primary" onclick="showWriteReviewModal()">
+            <i class="fas fa-plus"></i>
+            Write Review
+          </button>
+        </div>
+
+        <div id="reviewsList">
+          <!-- Sample reviews -->
+          <div class="review-card">
+            <div class="review-header">
+              <div class="review-place">Hundred Islands National Park</div>
+              <div class="review-rating">★★★★★</div>
+            </div>
+            <p class="review-text">Amazing experience! The island hopping tour was fantastic and the views were breathtaking. Perfect for family trips and photography enthusiasts.</p>
+            <div class="review-date">Reviewed 2 weeks ago</div>
+          </div>
+
+          <div class="review-card">
+            <div class="review-header">
+              <div class="review-place">Bolinao Lighthouse</div>
+              <div class="review-rating">★★★★☆</div>
+            </div>
+            <p class="review-text">Historical lighthouse with great views of the coastline. The climb to the top is worth it for the panoramic views. Best visited during sunset.</p>
+            <div class="review-date">Reviewed 1 month ago</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings Section -->
+      <div id="settings-section" class="content-section" style="display: none;">
+        <div class="section-header">
+          <h2 class="section-title">Account Settings</h2>
+        </div>
+
+        <div style="max-width: 600px;">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" class="form-input" value="John Doe">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-input" value="john.doe@example.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone</label>
+            <input type="tel" class="form-input" value="+63 912 345 6789">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Location</label>
+            <input type="text" class="form-input" value="Manila, Philippines">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Bio</label>
+            <textarea class="form-textarea" placeholder="Tell us about yourself and your travel interests...">Travel enthusiast exploring the beautiful Philippines one destination at a time!</textarea>
+          </div>
+          <button class="btn-primary">
+            <i class="fas fa-save"></i>
+            Save Changes
+          </button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Create Itinerary Modal -->
+  <div class="modal" id="createItineraryModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Create New Itinerary</h3>
+        <button class="modal-close" onclick="hideCreateItineraryModal()">&times;</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Itinerary Name</label>
+        <input type="text" class="form-input" placeholder="e.g., Summer Beach Adventure">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-textarea" placeholder="Describe your trip..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Start Date</label>
+        <input type="date" class="form-input">
+      </div>
+      <div class="form-group">
+        <label class="form-label">End Date</label>
+        <input type="date" class="form-input">
+      </div>
+      <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+        <button class="btn-secondary" onclick="hideCreateItineraryModal()">Cancel</button>
+        <button class="btn-primary" onclick="createItinerary()">
+          <i class="fas fa-plus"></i>
+          Create Itinerary
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Write Review Modal -->
+  <div class="modal" id="writeReviewModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Write a Review</h3>
+        <button class="modal-close" onclick="hideWriteReviewModal()">&times;</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Place</label>
+        <input type="text" class="form-input" placeholder="Search for a place...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Rating</label>
+        <div style="font-size: 1.5rem; color: #fbbf24; margin-top: 0.5rem;">
+          <span onclick="setRating(1)">☆</span>
+          <span onclick="setRating(2)">☆</span>
+          <span onclick="setRating(3)">☆</span>
+          <span onclick="setRating(4)">☆</span>
+          <span onclick="setRating(5)">☆</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Your Review</label>
+        <textarea class="form-textarea" placeholder="Share your experience..."></textarea>
+      </div>
+      <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+        <button class="btn-secondary" onclick="hideWriteReviewModal()">Cancel</button>
+        <button class="btn-primary" onclick="submitReview()">
+          <i class="fas fa-star"></i>
+          Submit Review
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentRating = 0;
+
+    // Navigation
+    function showSection(sectionName) {
+      // Hide all sections
+      const sections = document.querySelectorAll('.content-section');
+      sections.forEach(section => section.style.display = 'none');
+      
+      // Show selected section
+      document.getElementById(sectionName + '-section').style.display = 'block';
+      
+      // Update active menu item
+      const menuItems = document.querySelectorAll('.menu-item');
+      menuItems.forEach(item => item.classList.remove('active'));
+      event.target.closest('.menu-item').classList.add('active');
+    }
+
+    // Modal functions
+    function showCreateItineraryModal() {
+      document.getElementById('createItineraryModal').classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function hideCreateItineraryModal() {
+      document.getElementById('createItineraryModal').classList.remove('show');
+      document.body.style.overflow = '';
+    }
+
+    function showWriteReviewModal() {
+      document.getElementById('writeReviewModal').classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function hideWriteReviewModal() {
+      document.getElementById('writeReviewModal').classList.remove('show');
+      document.body.style.overflow = '';
+    }
+
+    // Rating function
+    function setRating(rating) {
+      currentRating = rating;
+      const stars = document.querySelectorAll('#writeReviewModal span');
+      stars.forEach((star, index) => {
+        star.textContent = index < rating ? '★' : '☆';
+      });
+    }
+
+    // Action functions
+    function createItinerary() {
+      alert('Itinerary created successfully! You can now add destinations to your trip.');
+      hideCreateItineraryModal();
+    }
+
+    function submitReview() {
+      if (currentRating === 0) {
+        alert('Please select a rating.');
+        return;
+      }
+      alert('Review submitted successfully! Thank you for sharing your experience.');
+      hideWriteReviewModal();
+    }
+
+    function removeSavedPlace(button) {
+      if (confirm('Remove this place from your saved list?')) {
+        button.closest('.saved-card').remove();
+      }
+    }
+
+    function logout() {
+      if (confirm('Are you sure you want to logout?')) {
+        window.location.href = '/tripko-system/tripko-frontend/file_html/SignUp_LogIn_Form.php';
+      }
+    }
+
+    // Close modals when clicking outside
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains('modal')) {
+        e.target.classList.remove('show');
+        document.body.style.overflow = '';
+      }
+    });
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', () => {
+      showSection('dashboard');
+    });
+  </script>
+</body>
+</html>

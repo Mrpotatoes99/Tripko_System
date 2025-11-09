@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Festivals</title>
+</head>
+<body>
+    <div id="result"></div>
+    <script>
+        async function testFestivals() {
+            try {
+                console.log('Testing festivals endpoint...');
+                const res = await fetch('../../../tripko-backend/api/festival/read.php');
+                const data = await res.json();
+                console.log('Response:', data);
+                document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+            } catch (err) {
+                console.error('Error:', err);
+                document.getElementById('result').textContent = 'Error: ' + err.message;
+            }
+        }
+        testFestivals();
+    </script>
+</body>
+</html>

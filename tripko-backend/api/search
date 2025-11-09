@@ -1,0 +1,36 @@
+<?php
+header('Content-Type: application/json');
+require_once '../config/Database.php';
+
+try {
+    $database = new Database();
+    $conn = $database->getConnection();
+    
+    $searchTerm = isset($_GET['term']) ? $_GET['term'] : '';
+    
+    if (strlen($searchTerm) < 2) {
+        echo json_encode([]);
+        exit;
+    }
+
+    $sql = "SELECT ts.spot_id, ts.name, ts.description, ts.category, t.town_name, ts.image_path 
+            FROM tourist_spots ts
+            INNER JOIN towns t ON ts.town_id = t.town_id
+            WHERE ts.status = 'active' 
+            AND (ts.name LIKE :term 
+                OR t.town_name LIKE :term 
+                OR ts.category LIKE :term)
+            ORDER BY ts.name ASC";
+    
+    $stmt = $conn->prepare($sql);
+    $term = "%{$searchTerm}%";
+    $stmt->bindParam(':term', $term);
+    $stmt->execute();
+    
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    echo json_encode($results);
+
+} catch (Exception $e) {
+    echo json_encode(['error' => $e->getMessage()]);
+}

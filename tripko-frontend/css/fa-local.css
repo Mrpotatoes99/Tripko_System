@@ -1,0 +1,11 @@
+/* Minimal local fallback icon set (subset) if CDN fails */
+[class^="fa-"], [class*=" fa-"] { font-family: 'Arial', sans-serif; font-style:normal; }
+.fa-search:before { content:'\1F50D'; }
+.fa-map:before { content:'\1F5FA'; }
+.fa-route:before { content:'\2192'; }
+.fa-camera:before { content:'\1F4F7'; }
+.fa-calendar:before { content:'\1F4C5'; }
+.fa-map-marker-alt:before { content:'\1F4CD'; }
+.fa-star:before { content:'★'; }
+/* Basic pseudo-element rendering */
+[class^="fa-"], [class*=" fa-"] { display:inline-block; }

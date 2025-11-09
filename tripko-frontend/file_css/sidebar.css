@@ -1,0 +1,61 @@
+  body {
+        font-family: 'Kameron';
+        font-size: 17px;
+    }
+
+    .text-2xl {
+        font-family: 'Kameron';
+        font-size: 17px;
+    }
+
+    nav a, 
+    .nav-link {
+      font-size: 17px;
+    }
+    .text-lg,
+    .font-semibold,
+    .font-medium,
+    h3,
+    .text-lg {
+      font-size: 17px;
+    }
+    p {
+        font-family: 'Kameron';
+    }
+
+    .stats-card h3 {
+      font-size: 17px;
+    }
+
+    .font-semibold,
+    .font-medium,
+    p {
+        font-size: 17px;
+    }
+
+     #transportDropdown a {
+        font-size: 17px;
+    }
+
+    .text-sm {
+        font-size: 17px; /* Slightly smaller for labels */
+    }
+
+    .chart-container {
+        font-family: 'Kameron';
+    }
+
+    .chart-container {
+      position: relative;
+      height: 300px;
+      width: 100%;
+    }
+    canvas#tourismChart, canvas#transportChart {
+      width: 100% !important;
+      height: 100% !important;
+    }
+    canvas#transportChart {
+      position: absolute !important;
+      top: 0;
+      left: 0;
+    }

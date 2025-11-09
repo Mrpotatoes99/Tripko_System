@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Destination Details - TripKo Pangasinan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <link href="https://unpkg.com/maplibre-gl@4.1.1/dist/maplibre-gl.css" rel="stylesheet" />
+  <script src="https://unpkg.com/maplibre-gl@4.1.1/dist/maplibre-gl.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: 'Inter', system-ui, sans-serif; 
+      line-height: 1.6; 
+      color: #1a1a1a;
+      background: #fff;
+    }
+
+    /* Header */
+    .header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      z-index: 1000;
+      transition: all 0.3s ease;
+    }
+    .nav {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 70px;
+    }
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #00a6b8;
+      text-decoration: none;
+    }
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+    }
+    .nav-links a {
+      text-decoration: none;
+      color: #374151;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover {
+      color: #00a6b8;
+    }
+    .share-save {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+    .action-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border: 2px solid #e2e8f0;
+      background: white;
+      border-radius: 50px;
+      text-decoration: none;
+      color: #374151;
+      font-weight: 600;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .action-btn:hover {
+      border-color: #00a6b8;
+      color: #00a6b8;
+    }
+    .action-btn.saved {
+      background: #ef4444;
+      border-color: #ef4444;
+      color: white;
+    }
+
+    /* Hero Section */
+    .hero {
+      margin-top: 70px;
+      position: relative;
+      height: 70vh;
+      overflow: hidden;
+    }
+    .hero-gallery {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 0.5rem;
+      height: 100%;
+    }
+    .hero-image {
+      background-size: cover;
+      background-position: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-image:hover {
+      transform: scale(1.02);
+    }
+    .hero-image.main {
+      grid-row: 1 / -1;
+    }
+    .hero-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(transparent, rgba(0,0,0,0.7));
+      color: white;
+      padding: 2rem;
+    }
+    .hero-title {
+      font-size: 3rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+    }
+    .hero-location {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.1rem;
+    }
+    .view-photos-btn {
+      position: absolute;
+      bottom: 1rem;
+      right: 1rem;
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .view-photos-btn:hover {
+      background: rgba(0,0,0,0.9);
+    }
+
+    /* Content Container */
+    .content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 3rem;
+      padding: 3rem 2rem;
+    }
+
+    /* Main Content */
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      gap: 3rem;
+    }
+
+    /* Overview */
+    .overview {
+      background: white;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    .rating-summary {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .rating-score {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .score-number {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: #00a6b8;
+    }
+    .stars-large {
+      font-size: 1.5rem;
+      color: #fbbf24;
+    }
+    .rating-details {
+      color: #64748b;
+    }
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .tag {
+      padding: 0.5rem 1rem;
+      background: #f1f5f9;
+      color: #475569;
+      border-radius: 20px;
+      font-weight: 500;
+      font-size: 0.875rem;
+    }
+    .description {
+      margin-top: 2rem;
+      line-height: 1.8;
+      color: #475569;
+      font-size: 1.1rem;
+    }
+
+    /* Section Headers */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+    }
+    .section-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #1e293b;
+    }
+    .view-all-btn {
+      color: #00a6b8;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+    .view-all-btn:hover {
+      color: #008a99;
+    }
+
+    /* Reviews */
+    .reviews {
+      background: white;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    .review-stats {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 2rem;
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .overall-rating {
+      text-align: center;
+    }
+    .rating-breakdown {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .rating-bar {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .bar-container {
+      flex: 1;
+      height: 8px;
+      background: #f1f5f9;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      background: #fbbf24;
+      transition: width 0.5s ease;
+    }
+    .review-card {
+      padding: 1.5rem 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .review-card:last-child {
+      border-bottom: none;
+    }
+    .review-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .reviewer-avatar {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #00a6b8, #0f766e);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+    }
+    .review-meta {
+      flex: 1;
+    }
+    .reviewer-name {
+      font-weight: 600;
+      color: #1e293b;
+    }
+    .review-date {
+      color: #64748b;
+      font-size: 0.875rem;
+    }
+    .review-rating {
+      color: #fbbf24;
+      margin-left: auto;
+    }
+    .review-text {
+      color: #475569;
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+    .review-actions {
+      display: flex;
+      gap: 1rem;
+    }
+    .review-action {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #64748b;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.875rem;
+      transition: color 0.2s;
+    }
+    .review-action:hover {
+      color: #00a6b8;
+    }
+
+    /* Map & Location */
+    .location-section {
+      background: white;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    .location-map {
+      width: 100%;
+      height: 300px;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+    .location-details {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .location-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .location-icon {
+      width: 40px;
+      height: 40px;
+      background: #f1f5f9;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #00a6b8;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    /* Quick Info */
+    .quick-info {
+      background: white;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      position: sticky;
+      top: 100px;
+    }
+    .info-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .info-item:last-child {
+      border-bottom: none;
+    }
+    .info-label {
+      color: #64748b;
+      font-weight: 500;
+    }
+    .info-value {
+      font-weight: 600;
+      color: #1e293b;
+    }
+    .status-open {
+      color: #059669;
+    }
+    .status-closed {
+      color: #dc2626;
+    }
+
+    /* Nearby Places */
+    .nearby {
+      background: white;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    .nearby-item {
+      display: flex;
+      gap: 1rem;
+      padding: 1rem 0;
+      border-bottom: 1px solid #f1f5f9;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .nearby-item:hover {
+      background: #f8fafc;
+      margin: 0 -1rem;
+      padding-left: 1rem;
+      padding-right: 1rem;
+      border-radius: 8px;
+    }
+    .nearby-item:last-child {
+      border-bottom: none;
+    }
+    .nearby-image {
+      width: 60px;
+      height: 60px;
+      background-size: cover;
+      background-position: center;
+      border-radius: 8px;
+    }
+    .nearby-content {
+      flex: 1;
+    }
+    .nearby-name {
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 0.25rem;
+    }
+    .nearby-meta {
+      color: #64748b;
+      font-size: 0.875rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+      background: white;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .btn-primary {
+      padding: 1rem 2rem;
+      background: linear-gradient(135deg, #00a6b8, #0f766e);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0,166,184,0.3);
+    }
+    .btn-secondary {
+      padding: 1rem 2rem;
+      background: white;
+      color: #00a6b8;
+      border: 2px solid #00a6b8;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .btn-secondary:hover {
+      background: #00a6b8;
+      color: white;
+    }
+
+    /* Weather Widget */
+    .weather-widget {
+      background: linear-gradient(135deg, #00a6b8, #0f766e);
+      color: white;
+      padding: 2rem;
+      border-radius: 16px;
+      text-align: center;
+    }
+    .weather-temp {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+    }
+    .weather-desc {
+      margin-bottom: 1rem;
+      opacity: 0.9;
+    }
+    .weather-details {
+      display: flex;
+      justify-content: space-around;
+      font-size: 0.875rem;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+      .hero-title {
+        font-size: 2rem;
+      }
+      .content {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        padding: 2rem 1rem;
+      }
+      .hero-gallery {
+        grid-template-columns: 1fr;
+        grid-template-rows: 2fr 1fr 1fr 1fr;
+      }
+      .hero-image.main {
+        grid-row: 1 / 2;
+      }
+      .nav-links {
+        display: none;
+      }
+      .share-save {
+        gap: 0.5rem;
+      }
+      .action-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+      }
+    }
+
+    /* Photo Gallery Modal */
+    .photo-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.9);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+    }
+    .photo-modal.show {
+      display: flex;
+    }
+    .modal-content {
+      max-width: 90%;
+      max-height: 90%;
+      position: relative;
+    }
+    .modal-image {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+    }
+    .modal-close {
+      position: absolute;
+      top: -40px;
+      right: 0;
+      color: white;
+      font-size: 2rem;
+      cursor: pointer;
+      background: none;
+      border: none;
+    }
+    .modal-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      color: white;
+      border: none;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1.5rem;
+      transition: all 0.2s;
+    }
+    .modal-nav:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    .modal-nav.prev {
+      left: -60px;
+    }
+    .modal-nav.next {
+      right: -60px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <nav class="nav">
+      <a href="/tripko-system/tripko-frontend/file_html/user/homepage-new.html" class="logo">TripKo</a>
+      <div class="nav-links">
+        <a href="/tripko-system/tripko-frontend/file_html/user/search.html">Search</a>
+        <a href="/tripko-system/tripko-frontend/file_html/user/map.html">Explore Map</a>
+        <a href="#" onclick="window.history.back()">← Back</a>
+      </div>
+      <div class="share-save">
+        <button class="action-btn" onclick="shareDestination()">
+          <i class="fas fa-share"></i>
+          Share
+        </button>
+        <button class="action-btn" onclick="toggleSave()" id="saveBtn">
+          <i class="far fa-heart"></i>
+          Save
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Hero Gallery -->
+  <section class="hero">
+    <div class="hero-gallery" id="heroGallery">
+      <!-- Images will be populated by JavaScript -->
+    </div>
+    <button class="view-photos-btn" onclick="openPhotoGallery()">
+      <i class="fas fa-images"></i>
+      View All Photos
+    </button>
+  </section>
+
+  <!-- Main Content -->
+  <div class="content">
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Overview -->
+      <section class="overview">
+        <div class="rating-summary">
+          <div class="rating-score">
+            <div class="score-number" id="ratingScore">4.8</div>
+            <div>
+              <div class="stars-large" id="ratingStars">★★★★★</div>
+              <div class="rating-details" id="ratingDetails">Based on 234 reviews</div>
+            </div>
+          </div>
+          <div class="tags" id="destinationTags">
+            <!-- Tags will be populated by JavaScript -->
+          </div>
+        </div>
+        <div class="description" id="destinationDescription">
+          <!-- Description will be populated by JavaScript -->
+        </div>
+      </section>
+
+      <!-- Reviews Section -->
+      <section class="reviews">
+        <div class="section-header">
+          <h2 class="section-title">Reviews</h2>
+          <a href="#" class="view-all-btn">View All Reviews</a>
+        </div>
+        
+        <div class="review-stats">
+          <div class="overall-rating">
+            <div class="score-number">4.8</div>
+            <div class="stars-large">★★★★★</div>
+            <div>Excellent</div>
+          </div>
+          <div class="rating-breakdown">
+            <div class="rating-bar">
+              <span>5 ★</span>
+              <div class="bar-container">
+                <div class="bar-fill" style="width: 75%"></div>
+              </div>
+              <span>75%</span>
+            </div>
+            <div class="rating-bar">
+              <span>4 ★</span>
+              <div class="bar-container">
+                <div class="bar-fill" style="width: 15%"></div>
+              </div>
+              <span>15%</span>
+            </div>
+            <div class="rating-bar">
+              <span>3 ★</span>
+              <div class="bar-container">
+                <div class="bar-fill" style="width: 7%"></div>
+              </div>
+              <span>7%</span>
+            </div>
+            <div class="rating-bar">
+              <span>2 ★</span>
+              <div class="bar-container">
+                <div class="bar-fill" style="width: 2%"></div>
+              </div>
+              <span>2%</span>
+            </div>
+            <div class="rating-bar">
+              <span>1 ★</span>
+              <div class="bar-container">
+                <div class="bar-fill" style="width: 1%"></div>
+              </div>
+              <span>1%</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="reviewsList">
+          <!-- Reviews will be populated by JavaScript -->
+        </div>
+      </section>
+
+      <!-- Location & Map -->
+      <section class="location-section">
+        <div class="section-header">
+          <h2 class="section-title">Location</h2>
+          <a href="#" class="view-all-btn">Get Directions</a>
+        </div>
+        
+        <div class="location-map" id="locationMap"></div>
+        
+        <div class="location-details">
+          <div class="location-item">
+            <div class="location-icon">
+              <i class="fas fa-map-marker-alt"></i>
+            </div>
+            <div>
+              <strong id="destinationAddress">Loading address...</strong>
+            </div>
+          </div>
+          <div class="location-item">
+            <div class="location-icon">
+              <i class="fas fa-route"></i>
+            </div>
+            <div>
+              <strong>Distance from city center:</strong>
+              <span id="distanceInfo">Loading...</span>
+            </div>
+          </div>
+          <div class="location-item">
+            <div class="location-icon">
+              <i class="fas fa-car"></i>
+            </div>
+            <div>
+              <strong>Transportation:</strong>
+              <span>Bus, Car, Tricycle available</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <!-- Quick Info -->
+      <div class="quick-info">
+        <h3 style="margin-bottom: 1rem; color: #1e293b;">Quick Info</h3>
+        <div class="info-item">
+          <span class="info-label">Status</span>
+          <span class="info-value status-open" id="openStatus">Open</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Best Time to Visit</span>
+          <span class="info-value">7 AM - 5 PM</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Entry Fee</span>
+          <span class="info-value" id="entryFee">Free</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Average Visit</span>
+          <span class="info-value">2-3 hours</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Accessibility</span>
+          <span class="info-value">Wheelchair accessible</span>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <a href="#" class="btn-primary" onclick="getDirections()">
+          <i class="fas fa-directions"></i>
+          Get Directions
+        </a>
+        <a href="#" class="btn-secondary" onclick="addToItinerary()">
+          <i class="fas fa-plus"></i>
+          Add to Itinerary
+        </a>
+        <button class="btn-secondary" onclick="writeReview()">
+          <i class="fas fa-star"></i>
+          Write a Review
+        </button>
+      </div>
+
+      <!-- Weather Widget -->
+      <div class="weather-widget">
+        <h3 style="margin-bottom: 1rem;">Current Weather</h3>
+        <div class="weather-temp">28°C</div>
+        <div class="weather-desc">Partly Cloudy</div>
+        <div class="weather-details">
+          <div>
+            <i class="fas fa-tint"></i>
+            <br>65% Humidity
+          </div>
+          <div>
+            <i class="fas fa-wind"></i>
+            <br>15 km/h Wind
+          </div>
+          <div>
+            <i class="fas fa-eye"></i>
+            <br>10km Visibility
+          </div>
+        </div>
+      </div>
+
+      <!-- Nearby Places -->
+      <div class="nearby">
+        <h3 style="margin-bottom: 1rem; color: #1e293b;">Nearby Places</h3>
+        <div id="nearbyPlaces">
+          <!-- Will be populated by JavaScript -->
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Photo Gallery Modal -->
+  <div class="photo-modal" id="photoModal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closePhotoGallery()">&times;</button>
+      <button class="modal-nav prev" onclick="prevPhoto()">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <img class="modal-image" id="modalImage" src="" alt="Destination Photo">
+      <button class="modal-nav next" onclick="nextPhoto()">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    let currentDestination = null;
+    let allPhotos = [];
+    let currentPhotoIndex = 0;
+    let map = null;
+
+    // Get destination ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const destinationId = urlParams.get('id');
+
+    // Sample reviews data
+    const sampleReviews = [
+      {
+        name: 'Maria Santos',
+        avatar: 'MS',
+        rating: 5,
+        date: '2 days ago',
+        text: 'Absolutely breathtaking! The view is incredible and the place is well-maintained. Perfect for family trips and photography. The staff are very helpful and friendly.',
+        helpful: 12,
+        photos: 3
+      },
+      {
+        name: 'John Rodriguez',
+        avatar: 'JR',
+        rating: 5,
+        date: '1 week ago',
+        text: 'A hidden gem in Pangasinan! The natural beauty here is unmatched. Great for hiking and exploring. Make sure to bring water and wear comfortable shoes.',
+        helpful: 8,
+        photos: 0
+      },
+      {
+        name: 'Sarah Kim',
+        avatar: 'SK',
+        rating: 4,
+        date: '2 weeks ago',
+        text: 'Beautiful destination with amazing views. Can get crowded during weekends, so I recommend visiting on weekdays for a more peaceful experience.',
+        helpful: 15,
+        photos: 2
+      }
+    ];
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', () => {
+      loadDestination();
+      initializeMap();
+    });
+
+    async function loadDestination() {
+      try {
+        if (!destinationId) {
+          showError('No destination ID provided');
+          return;
+        }
+
+        // Fetch destination data
+        const response = await fetch('/tripko-system/tripko-backend/api/map/markers.php');
+        const data = await response.json();
+        
+        currentDestination = data.features?.find(f => f.properties.id == destinationId);
+        
+        if (!currentDestination) {
+          showError('Destination not found');
+          return;
+        }
+
+        populateDestinationData();
+        loadNearbyPlaces();
+        
+      } catch (error) {
+        console.error('Failed to load destination:', error);
+        showError('Failed to load destination data');
+      }
+    }
+
+    function populateDestinationData() {
+      const props = currentDestination.properties;
+      
+      // Update page title
+      document.title = `${props.name} - TripKo Pangasinan`;
+      
+      // Generate sample photos
+      allPhotos = [
+        props.image || 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
+        'https://images.unsplash.com/photo-1539650116574-75c0c6d9d8d6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1551632811-561732d1e306?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1528728329032-2972f65dfb3f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+      ];
+
+      // Populate hero gallery
+      const heroGallery = document.getElementById('heroGallery');
+      heroGallery.innerHTML = allPhotos.slice(0, 5).map((photo, index) => `
+        <div class="hero-image ${index === 0 ? 'main' : ''}" 
+             style="background-image: url('${photo}')"
+             onclick="openPhotoGallery(${index})">
+          ${index === 0 ? `
+            <div class="hero-overlay">
+              <h1 class="hero-title">${props.name}</h1>
+              <div class="hero-location">
+                <i class="fas fa-map-marker-alt"></i>
+                ${props.municipality || 'Pangasinan'}, Philippines
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      `).join('');
+
+      // Update rating and description
+      const rating = (Math.random() * 2 + 3).toFixed(1);
+      const reviewCount = Math.floor(Math.random() * 500) + 50;
+      
+      document.getElementById('ratingScore').textContent = rating;
+      document.getElementById('ratingStars').textContent = '★'.repeat(Math.floor(rating)) + '☆'.repeat(5 - Math.floor(rating));
+      document.getElementById('ratingDetails').textContent = `Based on ${reviewCount} reviews`;
+      
+      // Generate tags
+      const allTags = ['Scenic Views', 'Photography', 'Family Friendly', 'Nature', 'Adventure', 'Peaceful', 'Instagram Worthy', 'Historical'];
+      const tags = allTags.sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 4) + 3);
+      document.getElementById('destinationTags').innerHTML = tags.map(tag => 
+        `<span class="tag">${tag}</span>`
+      ).join('');
+
+      // Update description
+      const description = props.description || `${props.name} is one of Pangasinan's most beautiful destinations, offering visitors an unforgettable experience surrounded by natural beauty. Whether you're looking for adventure, relaxation, or simply want to capture stunning photos, this destination has something for everyone. The area is well-maintained and easily accessible, making it perfect for families, solo travelers, and groups alike.`;
+      document.getElementById('destinationDescription').textContent = description;
+
+      // Update address and other info
+      document.getElementById('destinationAddress').textContent = `${props.municipality || 'Pangasinan'}, Philippines`;
+      document.getElementById('distanceInfo').textContent = `${(Math.random() * 25 + 2).toFixed(1)} km`;
+      
+      // Update entry fee
+      const fees = ['Free', '₱20', '₱50', '₱100'];
+      document.getElementById('entryFee').textContent = fees[Math.floor(Math.random() * fees.length)];
+
+      // Populate reviews
+      populateReviews();
+    }
+
+    function populateReviews() {
+      const reviewsList = document.getElementById('reviewsList');
+      reviewsList.innerHTML = sampleReviews.map(review => `
+        <div class="review-card">
+          <div class="review-header">
+            <div class="reviewer-avatar">${review.avatar}</div>
+            <div class="review-meta">
+              <div class="reviewer-name">${review.name}</div>
+              <div class="review-date">${review.date}</div>
+            </div>
+            <div class="review-rating">${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}</div>
+          </div>
+          <p class="review-text">${review.text}</p>
+          <div class="review-actions">
+            <button class="review-action">
+              <i class="fas fa-thumbs-up"></i>
+              Helpful (${review.helpful})
+            </button>
+            ${review.photos > 0 ? `
+              <button class="review-action">
+                <i class="fas fa-camera"></i>
+                ${review.photos} Photos
+              </button>
+            ` : ''}
+            <button class="review-action">
+              <i class="fas fa-reply"></i>
+              Reply
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function initializeMap() {
+      if (!currentDestination) {
+        setTimeout(initializeMap, 500);
+        return;
+      }
+
+      map = new maplibregl.Map({
+        container: 'locationMap',
+        style: 'https://tiles.openfreemap.org/styles/liberty',
+        center: currentDestination.geometry.coordinates,
+        zoom: 14
+      });
+
+      // Add marker
+      const el = document.createElement('div');
+      el.style.cssText = `
+        background: #00a6b8;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 4px solid white;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 16px;
+        font-weight: bold;
+      `;
+      el.innerHTML = '<i class="fas fa-map-marker-alt"></i>';
+
+      new maplibregl.Marker(el)
+        .setLngLat(currentDestination.geometry.coordinates)
+        .addTo(map);
+
+      map.addControl(new maplibregl.NavigationControl(), 'top-right');
+    }
+
+    async function loadNearbyPlaces() {
+      // Generate nearby places (in real implementation, this would fetch from API)
+      const nearbyPlaces = [
+        {
+          name: 'Local Restaurant',
+          type: 'Restaurant',
+          distance: '0.5 km',
+          rating: '4.2',
+          image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80'
+        },
+        {
+          name: 'Souvenir Shop',
+          type: 'Shopping',
+          distance: '0.8 km',
+          rating: '4.0',
+          image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80'
+        },
+        {
+          name: 'Beach Resort',
+          type: 'Accommodation',
+          distance: '1.2 km',
+          rating: '4.6',
+          image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80'
+        }
+      ];
+
+      document.getElementById('nearbyPlaces').innerHTML = nearbyPlaces.map(place => `
+        <div class="nearby-item">
+          <div class="nearby-image" style="background-image: url('${place.image}')"></div>
+          <div class="nearby-content">
+            <div class="nearby-name">${place.name}</div>
+            <div class="nearby-meta">
+              <span>${place.type}</span>
+              <span>•</span>
+              <span>${place.distance}</span>
+              <span>•</span>
+              <span>★ ${place.rating}</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function showError(message) {
+      document.querySelector('.content').innerHTML = `
+        <div style="text-align: center; padding: 3rem;">
+          <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #ef4444; margin-bottom: 1rem;"></i>
+          <h2>${message}</h2>
+          <p>Please try again or contact support.</p>
+          <a href="/tripko-system/tripko-frontend/file_html/user/homepage-new.html" class="btn-primary" style="margin-top: 1rem; display: inline-flex;">
+            Go Home
+          </a>
+        </div>
+      `;
+    }
+
+    // Gallery functions
+    function openPhotoGallery(index = 0) {
+      currentPhotoIndex = index;
+      document.getElementById('modalImage').src = allPhotos[currentPhotoIndex];
+      document.getElementById('photoModal').classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closePhotoGallery() {
+      document.getElementById('photoModal').classList.remove('show');
+      document.body.style.overflow = '';
+    }
+
+    function nextPhoto() {
+      currentPhotoIndex = (currentPhotoIndex + 1) % allPhotos.length;
+      document.getElementById('modalImage').src = allPhotos[currentPhotoIndex];
+    }
+
+    function prevPhoto() {
+      currentPhotoIndex = (currentPhotoIndex - 1 + allPhotos.length) % allPhotos.length;
+      document.getElementById('modalImage').src = allPhotos[currentPhotoIndex];
+    }
+
+    // Action functions
+    function toggleSave() {
+      const saveBtn = document.getElementById('saveBtn');
+      const icon = saveBtn.querySelector('i');
+      
+      if (saveBtn.classList.contains('saved')) {
+        saveBtn.classList.remove('saved');
+        icon.className = 'far fa-heart';
+        saveBtn.innerHTML = '<i class="far fa-heart"></i> Save';
+      } else {
+        saveBtn.classList.add('saved');
+        icon.className = 'fas fa-heart';
+        saveBtn.innerHTML = '<i class="fas fa-heart"></i> Saved';
+      }
+    }
+
+    function shareDestination() {
+      if (navigator.share) {
+        navigator.share({
+          title: currentDestination?.properties.name || 'TripKo Destination',
+          text: 'Check out this amazing destination in Pangasinan!',
+          url: window.location.href
+        });
+      } else {
+        navigator.clipboard.writeText(window.location.href);
+        alert('Link copied to clipboard!');
+      }
+    }
+
+    function getDirections() {
+      if (!currentDestination) return;
+      
+      const coords = currentDestination.geometry.coordinates;
+      const url = `https://www.google.com/maps/dir/?api=1&destination=${coords[1]},${coords[0]}`;
+      window.open(url, '_blank');
+    }
+
+    function addToItinerary() {
+      alert('Feature coming soon! You will be able to add destinations to your custom itinerary.');
+    }
+
+    function writeReview() {
+      alert('Feature coming soon! You will be able to write and share reviews.');
+    }
+
+    // Keyboard navigation for gallery
+    document.addEventListener('keydown', (e) => {
+      if (document.getElementById('photoModal').classList.contains('show')) {
+        if (e.key === 'ArrowLeft') prevPhoto();
+        if (e.key === 'ArrowRight') nextPhoto();
+        if (e.key === 'Escape') closePhotoGallery();
+      }
+    });
+
+    // Close modal on background click
+    document.getElementById('photoModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('photoModal')) {
+        closePhotoGallery();
+      }
+    });
+  </script>
+</body>
+</html>

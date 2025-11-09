@@ -1,0 +1,243 @@
+/* Modern TripAdvisor-inspired Navbar Styles */
+:root {
+  --tk-bg: rgba(255,255,255,0.85);
+  --tk-bg-solid: #ffffff;
+  --tk-border: rgba(0,0,0,0.08);
+  --tk-accent: #00a6b8;
+  --tk-accent-grad: linear-gradient(135deg,#00a6b8,#0f766e);
+  --tk-text: #0f172a;
+  --tk-text-dim: #475569;
+  --tk-radius-sm: 6px;
+  --tk-radius: 12px;
+  --tk-blur: 14px;
+  --tk-shadow-sm: 0 2px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --tk-shadow: 0 4px 24px -2px rgba(0,0,0,0.08), 0 10px 40px -6px rgba(0,0,0,0.12);
+  --tk-trans-fast: 0.18s cubic-bezier(.4,0,.2,1);
+  --tk-trans: 0.35s cubic-bezier(.4,0,.2,1);
+  --nav-expanded-h: 74px;
+  --nav-collapsed-h: 44px;
+}
+
+.tk-navbar {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: var(--nav-expanded-h);
+  display: flex;
+  align-items: center;
+  z-index: 1100;
+  font-family: 'Inter', system-ui, sans-serif;
+  --surface: var(--tk-bg);
+  background: var(--surface);
+  backdrop-filter: blur(var(--tk-blur));
+  -webkit-backdrop-filter: blur(var(--tk-blur));
+  border-bottom: 1px solid var(--tk-border);
+  transition: background var(--tk-trans), box-shadow var(--tk-trans), height var(--tk-trans-fast);
+}
+
+.tk-navbar.scrolled {
+  background: var(--tk-bg-solid);
+  box-shadow: var(--tk-shadow-sm);
+  height: calc(var(--nav-expanded-h) - 4px);
+}
+
+.tk-nav-inner { 
+  width: min(1400px, 100% - 1.5rem); 
+  margin: 0 auto; 
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.tk-logo { 
+  display: flex; 
+  align-items: center; 
+  gap: .75rem; 
+  font-size: 1.25rem; 
+  font-weight: 800; 
+  letter-spacing: -0.5px; 
+  color: var(--tk-text); 
+  text-decoration: none; 
+  position: relative; 
+  isolation: isolate;
+}
+.tk-logo .logo-icon { 
+  width: 46px; height: 46px; 
+  display:flex; align-items:center; justify-content:center; 
+  background: var(--tk-accent-grad); 
+  color:#fff; 
+  border-radius: 14px; 
+  font-size: 1.4rem; 
+  box-shadow: 0 4px 12px -2px rgba(0,166,184,.4), 0 2px 4px rgba(0,0,0,.12); 
+}
+.tk-logo .accent { background: var(--tk-accent-grad); background-clip: text; -webkit-background-clip:text; color:transparent; }
+
+.tk-mobile-toggle { 
+  display:none; 
+  background: transparent; 
+  border: 1px solid var(--tk-border);
+  width:48px; height:48px; 
+  border-radius: 14px; 
+  font-size: 1.6rem; 
+  color: var(--tk-text); 
+  align-items:center; justify-content:center; 
+  cursor:pointer; 
+  transition: background var(--tk-trans-fast), color var(--tk-trans-fast), border-color var(--tk-trans-fast);
+}
+.tk-mobile-toggle:hover { background: rgba(0,0,0,0.04); }
+.tk-mobile-toggle:active { background: rgba(0,0,0,0.07); }
+
+.tk-links-wrapper { display:flex; }
+.tk-links { list-style:none; display:flex; gap:.15rem; margin:0; padding:0; align-items:center; }
+.tk-links > li { position:relative; }
+.tk-logo { font-size: 1.15rem; }
+
+.tk-links a, .tk-links button.dropdown-trigger { 
+  --pad-x: 0.75rem; --pad-y: .75rem; 
+  font-weight: 500; 
+  font-size: 0.9rem; 
+  line-height: 1; 
+  letter-spacing: 0; 
+  padding: var(--pad-y) var(--pad-x); 
+  border-radius: 10px; 
+  color: var(--tk-text-dim); 
+  text-decoration:none; 
+  display:flex; 
+  align-items:center; 
+  gap:.4rem; 
+  position:relative; 
+  transition: color var(--tk-trans-fast), background var(--tk-trans-fast), transform var(--tk-trans-fast);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.tk-links a i.ext { font-size: .9rem; margin-left: 2px; opacity:.7; }
+
+.tk-links a:hover, .tk-links button.dropdown-trigger:hover { background: rgba(0,0,0,0.045); color: var(--tk-text); }
+
+.tk-links a.active, .tk-links .has-dropdown.active > button.dropdown-trigger { 
+  color: var(--tk-text); font-weight:600; 
+  background: rgba(0,166,184,0.08); 
+}
+.tk-links a.active:after, .tk-links .has-dropdown.active > button.dropdown-trigger:after { 
+  content:""; position:absolute; inset:auto 10px -5px 10px; height:3px; border-radius:3px; background: var(--tk-accent-grad); box-shadow:0 3px 8px -2px rgba(0,166,184,.6);
+}
+
+.separator { width:1px; height:28px; background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.2), transparent); margin-inline:.75rem; }
+.logout-link { color:#b91c1c !important; font-weight:600; }
+.logout-link:hover { background: rgba(185,28,28,.08) !important; color:#991b1b !important; }
+
+/* Simple Dropdown */
+.has-dropdown .dropdown-trigger .chevron { font-size:1.1rem; transition: transform var(--tk-trans-fast); }
+.has-dropdown.show .dropdown-trigger .chevron { transform: rotate(180deg); }
+.has-dropdown.simple { position:relative; }
+.has-dropdown.simple .dropdown-simple { 
+  list-style:none; margin:0; padding:.4rem 0; 
+  position:absolute; top: calc(100% + 8px); left:0; 
+  min-width: 200px; 
+  background: var(--tk-bg-solid); 
+  border:1px solid var(--tk-border); 
+  border-radius: 12px; 
+  box-shadow: var(--tk-shadow); 
+  opacity:0; visibility:hidden; transform: translateY(6px); 
+  transition: opacity var(--tk-trans-fast), transform var(--tk-trans-fast);
+  backdrop-filter: blur(var(--tk-blur));
+  z-index: 50;
+}
+.has-dropdown.simple::after { /* hover buffer area to allow diagonal movement */
+  content:""; position:absolute; left:0; right:0; top:100%; height:14px; pointer-events:auto;
+}
+.has-dropdown.simple.show .dropdown-simple { opacity:1; visibility:visible; transform: translateY(0); }
+.has-dropdown.simple .dropdown-simple a { 
+  display:block; padding:.65rem .95rem; font-size:.9rem; color: var(--tk-text-dim); text-decoration:none; transition: background var(--tk-trans-fast), color var(--tk-trans-fast); 
+}
+.has-dropdown.simple .dropdown-simple a:hover { background: rgba(0,166,184,0.08); color: var(--tk-text); }
+
+/* Desktop hover fallback */
+@media (hover:hover) and (min-width: 1025px) { 
+  .has-dropdown.simple:hover .dropdown-simple { opacity:1; visibility:visible; transform: translateY(0); }
+}
+
+/* Retain mobile open/close logic via JS (list stays hidden until .show) */
+
+/* Mobile / Tablet */
+@media (max-width: 1100px) {
+  .tk-mobile-toggle { display:flex; }
+  .tk-links-wrapper { 
+    position: fixed; inset: 0 0 0 auto; 
+    width: min(420px, 88%); 
+    background: var(--tk-bg-solid); 
+    box-shadow: -4px 0 24px -4px rgba(0,0,0,.25); 
+    border-left:1px solid var(--tk-border);
+    transform: translateX(105%); 
+    display:block; 
+    padding: 100px 1.5rem 2.5rem; 
+    overflow-y: auto; 
+    transition: transform var(--tk-trans);
+  }
+  .tk-links-wrapper.open { transform: translateX(0); }
+  html.nav-open { overflow:hidden; }
+  .tk-links { flex-direction:column; align-items:stretch; gap:.35rem; }
+  .tk-links a, .tk-links button.dropdown-trigger { font-size:1rem; padding: 1rem 1.1rem; border-radius:14px; }
+  .separator { align-self:stretch; width:100%; height:1px; background:linear-gradient(to right, transparent, rgba(0,0,0,0.25), transparent); margin: .85rem 0 1rem; }
+  .has-dropdown { width:100%; }
+  .dropdown-panel { position:static; width:100%; transform:none !important; opacity:1 !important; visibility:visible !important; box-shadow:none; padding: .25rem 0 .5rem; border:none; background:transparent; }
+  .dropdown-grid { grid-template-columns: 1fr 1fr; gap:.65rem; }
+  .dropdown-grid .tile { background: rgba(0,0,0,0.035); }
+  .dropdown-grid .tile:hover { background: var(--tk-accent-grad); }
+  .has-dropdown:not(.show) .dropdown-grid { display:none; }
+  .has-dropdown > .dropdown-trigger { width:100%; justify-content:space-between; }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .tk-navbar, .dropdown-panel, .tk-mobile-toggle, .tk-links a, .dropdown-grid .tile { transition: none !important; }
+}
+
+/* Scrollbar inside mobile panel */
+.tk-links-wrapper::-webkit-scrollbar { width:10px; }
+.tk-links-wrapper::-webkit-scrollbar-track { background: transparent; }
+.tk-links-wrapper::-webkit-scrollbar-thumb { background: rgba(0,0,0,.18); border-radius:20px; }
+.tk-links-wrapper::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,.32); }
+
+/* Utility states */
+.tk-links a:focus-visible, .dropdown-trigger:focus-visible, .dropdown-grid .tile:focus-visible { outline:2px solid var(--tk-accent); outline-offset:3px; }
+
+/* Reserve top spacing for fixed navbar (optional: pages can override with custom hero spacing) */
+body { --nav-height: 74px; }
+body:not(.no-nav-offset) { padding-top: var(--nav-height); }
+
+/* Collapse-on-hover behavior (desktop only) */
+@media (hover:hover) and (min-width: 1025px) {
+  .tk-navbar.collapse-on-hover {
+    height: var(--nav-collapsed-h);
+    transition: height var(--tk-trans-fast), background var(--tk-trans), box-shadow var(--tk-trans);
+  }
+  .tk-navbar.collapse-on-hover:hover,
+  .tk-navbar.collapse-on-hover:focus-within {
+    height: var(--nav-expanded-h);
+  }
+  /* Compact inner spacing when collapsed */
+  .tk-navbar.collapse-on-hover:not(:hover):not(:focus-within) .tk-nav-inner { gap: 0.5rem; }
+  .tk-navbar.collapse-on-hover:not(:hover):not(:focus-within) .tk-logo { gap: .5rem; }
+  .tk-navbar.collapse-on-hover:not(:hover):not(:focus-within) .tk-logo .logo-text { display: none; }
+
+  /* Hide link labels when collapsed; show icons only */
+  .tk-navbar.collapse-on-hover:not(:hover):not(:focus-within) .tk-links span { 
+    max-width: 0; 
+    opacity: 0; 
+    transform: translateY(-2px);
+    margin-left: 0; 
+    overflow: hidden; 
+    transition: opacity var(--tk-trans-fast), transform var(--tk-trans-fast), max-width var(--tk-trans-fast);
+  }
+  .tk-navbar.collapse-on-hover:hover .tk-links span,
+  .tk-navbar.collapse-on-hover:focus-within .tk-links span {
+    max-width: 200px; opacity: 1; transform: none;
+  }
+
+  /* Keep dropdowns hidden while collapsed */
+  .tk-navbar.collapse-on-hover:not(:hover):not(:focus-within) .has-dropdown.simple .dropdown-simple { display: none !important; }
+}

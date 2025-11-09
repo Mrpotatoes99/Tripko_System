@@ -1,0 +1,36 @@
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Node
+node_modules/
+
+# PHP Composer
+/vendor/
+# Keep composer.lock for reproducible installs
+# !composer.lock
+
+# Environment / Secrets
+.env
+.env.*
+
+# App runtime/uploads (don’t version user uploads)
+/uploads/
+
+# Sensitive backend configs (use the *.example.php templates instead)
+/tripko-backend/config/Database.php
+/tripko-backend/config/db.php
+/tripko-backend/config/mail_config.php
+/tripko-backend/config/sms_config.php
+/tripko-backend/config/debug.php
+/tripko-backend/mail_debug.log
+/tripko-backend/*.log
+
+# Local build/output caches
+**/.cache/
+**/dist/
+
+# Misc
+cleanup/*.txt

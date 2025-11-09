@@ -1,0 +1,436 @@
+(() => {
+  const API_BASE = window.TRIPKO_API_BASE || '../../tripko-backend/api';
+  const endpoints = {
+    spots: `${API_BASE}/tourist_spots.php`,
+    terminals: `${API_BASE}/terminals.php`,
+    route: `${API_BASE}/route_finder/`,
+  };
+
+  // Mobile viewport height fix (accounts for browser UI chrome)
+  function setViewportHeightVar() {
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+  }
+  setViewportHeightVar();
+  window.addEventListener('resize', () => {
+    setViewportHeightVar();
+    if (map) setTimeout(() => map.invalidateSize(), 100);
+  });
+  window.addEventListener('orientationchange', () => {
+    setViewportHeightVar();
+    if (map) setTimeout(() => map.invalidateSize(), 150);
+  });
+
+  // Leaflet map init
+  const map = L.map('map');
+  const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  // Icons
+  const iconSpot = L.icon({
+    iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+    iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34],
+    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png', shadowSize: [41, 41]
+  });
+  const iconTerminal = L.divIcon({
+    className: 'terminal-icon',
+    html: '<div class="dot blue"></div>',
+    iconSize: [16, 16], iconAnchor: [8, 8]
+  });
+
+  const state = {
+    terminals: [],
+    spots: [],
+    markers: {
+      terminals: L.layerGroup().addTo(map),
+      spots: L.layerGroup().addTo(map),
+      route: L.layerGroup().addTo(map),
+    },
+    selection: {
+      start: null, // {type: 'coords'|'terminal', id?, label, lat, lng}
+      dest: null,  // {type: 'spot', id, label, lat, lng}
+    },
+  };
+
+  // Helpers
+  const $ = (sel) => document.querySelector(sel);
+  const startInput = $('#startInput');
+  const destInput = $('#destInput');
+  const startOptions = $('#startOptions');
+  const destOptions = $('#destOptions');
+  const btnMyLocation = $('#btnMyLocation');
+  const btnFindRoute = $('#btnFindRoute');
+  const btnClear = $('#btnClear');
+  const btnStartNav = $('#btnStartNav');
+  const togglePanel = $('#togglePanel');
+  const searchPanel = $('#searchPanel');
+  const darkModeToggle = $('#darkModeToggle');
+  const loader = $('#routeLoader');
+  const messages = $('#messages');
+  const summaryCard = $('#summaryCard');
+  const walkSegment = $('#walkSegment');
+  
+  // Summary elements
+  const sumStart = $('#sumStart');
+  const sumDest = $('#sumDest');
+  const sumDistance = $('#sumDistance');
+  const sumDuration = $('#sumDuration');
+  const sumFare = $('#sumFare');
+  const sumServingTerminal = $('#sumServingTerminal');
+  const sumWalk = $('#sumWalk');
+  const sumVehicle = $('#sumVehicle');
+  const sumMode = $('#sumMode');
+  const sumEffectiveKm = $('#sumEffectiveKm');
+
+  function showMessage(text, type = 'info') {
+    const div = document.createElement('div');
+    div.className = `msg ${type}`;
+    div.textContent = text;
+    messages.appendChild(div);
+    setTimeout(() => div.remove(), 6000);
+  }
+
+  function setLoading(isLoading) {
+    if (!loader) return;
+    if (isLoading) {
+      loader.hidden = false;
+      loader.setAttribute('aria-hidden','false');
+    } else {
+      loader.hidden = true;
+      loader.setAttribute('aria-hidden','true');
+    }
+  }
+
+  function fitAllMarkers() {
+    const bounds = L.latLngBounds([]);
+    state.markers.terminals.eachLayer((m) => bounds.extend(m.getLatLng()));
+    state.markers.spots.eachLayer((m) => bounds.extend(m.getLatLng()));
+    if (bounds.isValid()) {
+      map.fitBounds(bounds.pad(0.2));
+    } else {
+      map.setView([16.15, 119.95], 9); // Pangasinan area fallback
+    }
+  }
+
+  function addMarkers() {
+    state.markers.terminals.clearLayers();
+    state.markers.spots.clearLayers();
+
+    state.terminals.filter(t => t.has_coordinates).forEach(t => {
+      const m = L.marker([t.latitude, t.longitude], { icon: iconTerminal })
+        .bindPopup(`<b>${t.name}</b><br/>${t.address || ''}`);
+      m.on('click', () => {
+        state.selection.start = { type: 'terminal', id: t.id, label: t.name, lat: t.latitude, lng: t.longitude };
+        startInput.value = t.name;
+      });
+      state.markers.terminals.addLayer(m);
+    });
+
+    state.spots.filter(s => s.has_coordinates).forEach(s => {
+      const img = s.image_path ? `<br/><img src="../../uploads/${s.image_path}" alt="${s.name}" style="width:100px;height:auto;border-radius:6px;margin-top:6px;"/>` : '';
+      const m = L.marker([s.latitude, s.longitude], { icon: iconSpot })
+        .bindPopup(`<b>${s.name}</b><br/>${s.category || ''}${img}`);
+      m.on('click', () => {
+        state.selection.dest = { type: 'spot', id: s.id, label: s.name, lat: s.latitude, lng: s.longitude };
+        destInput.value = s.name;
+      });
+      state.markers.spots.addLayer(m);
+    });
+  }
+
+  function populateAutocomplete() {
+    startOptions.innerHTML = '';
+    destOptions.innerHTML = '';
+
+    // Terminals for start
+    state.terminals.forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t.name;
+      opt.dataset.type = 'terminal';
+      opt.dataset.id = t.id;
+      startOptions.appendChild(opt);
+    });
+
+    // Spots for destination
+    state.spots.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.name;
+      opt.dataset.type = 'spot';
+      opt.dataset.id = s.id;
+      destOptions.appendChild(opt);
+    });
+  }
+
+  function resolveStartByName(name) {
+    const t = state.terminals.find(x => x.name.toLowerCase() === name.toLowerCase());
+    if (t && t.has_coordinates) {
+      return { type: 'terminal', id: t.id, label: t.name, lat: t.latitude, lng: t.longitude };
+    }
+    return null;
+  }
+  function resolveDestByName(name) {
+    const s = state.spots.find(x => x.name.toLowerCase() === name.toLowerCase());
+    if (s && s.has_coordinates) {
+      return { type: 'spot', id: s.id, label: s.name, lat: s.latitude, lng: s.longitude };
+    }
+    return null;
+  }
+
+  async function fetchJson(url, opts) {
+    const res = await fetch(url, opts);
+    const data = await res.json();
+    return data;
+  }
+
+  async function loadData() {
+    try {
+      const [spots, terminals] = await Promise.all([
+        fetchJson(endpoints.spots),
+        fetchJson(endpoints.terminals),
+      ]);
+      if (!spots.success) throw new Error('Failed to load spots');
+      if (!terminals.success) throw new Error('Failed to load terminals');
+      state.spots = spots.data;
+      state.terminals = terminals.data;
+      addMarkers();
+      populateAutocomplete();
+      fitAllMarkers();
+    } catch (e) {
+      console.error(e);
+      showMessage('Failed to load map data. Please refresh.', 'error');
+      map.setView([16.15, 119.95], 9);
+    }
+  }
+
+  function clearRoute() {
+    state.markers.route.clearLayers();
+    sumStart.textContent = '—';
+    sumDest.textContent = '—';
+    sumDistance.textContent = '—';
+    sumDuration.textContent = '—';
+    sumFare.textContent = '—';
+    if (sumServingTerminal) sumServingTerminal.textContent = '—';
+    if (sumWalk) sumWalk.textContent = '—';
+    if (sumVehicle) sumVehicle.textContent = '—';
+    if (sumMode) sumMode.textContent = '—';
+    if (sumEffectiveKm) sumEffectiveKm.textContent = '—';
+    btnStartNav.disabled = true;
+    if (summaryCard) summaryCard.style.display = 'none';
+  }
+
+  async function findRoute() {
+    messages.innerHTML = '';
+    const messagesSp = document.getElementById('messages_sp');
+    if (messagesSp) messagesSp.innerHTML='';
+    // resolve selections from inputs if user typed
+    if (!state.selection.start && startInput.value.trim()) {
+      state.selection.start = resolveStartByName(startInput.value.trim());
+    }
+    if (!state.selection.dest && destInput.value.trim()) {
+      state.selection.dest = resolveDestByName(destInput.value.trim());
+    }
+
+    if (!state.selection.dest) {
+      showMessage('Please select a destination tourist spot', 'error');
+      return;
+    }
+    if (!state.selection.start) {
+      showMessage('Please select a starting terminal or use your location', 'error');
+      return;
+    }
+
+    const payload = { destination_id: state.selection.dest.id };
+    if (state.selection.start.type === 'terminal') {
+      payload.start_type = 'terminal';
+      payload.start_id = state.selection.start.id;
+    } else {
+      payload.start_type = 'coords';
+      payload.start_lat = state.selection.start.lat;
+      payload.start_lng = state.selection.start.lng;
+    }
+
+    try {
+      setLoading(true);
+      const res = await fetch(endpoints.route, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        // Surface backend error details to help diagnose 500s locally
+        console.error('Route API error:', data);
+        if (data.error && location.hostname === 'localhost') {
+          showMessage(data.error, 'error');
+        }
+        throw new Error(data.message || 'No route found');
+      }
+
+      const r = data.route;
+      clearRoute();
+      const line = L.polyline(r.polyline, { color: '#1a73e8', weight: 5 }).addTo(state.markers.route);
+      L.circleMarker([r.start.latitude, r.start.longitude], { radius: 7, color: '#1a73e8' })
+        .addTo(state.markers.route).bindPopup('Start: ' + r.start.label);
+      L.circleMarker([r.destination.latitude, r.destination.longitude], { radius: 7, color: '#34a853' })
+        .addTo(state.markers.route).bindPopup('Destination: ' + r.destination.label);
+
+      // Highlight serving terminal when available
+      if (r.terminals_used && r.terminals_used.serving_terminal) {
+        const st = r.terminals_used.serving_terminal;
+        if (st && st.latitude != null && st.longitude != null) {
+          L.circleMarker([st.latitude, st.longitude], { radius: 6, color: '#fbbc05' })
+            .addTo(state.markers.route)
+            .bindPopup('Serving Terminal: ' + (st.name || ''));
+        }
+      }
+      map.fitBounds(line.getBounds().pad(0.25));
+
+      sumStart.textContent = r.start.label;
+      sumDest.textContent = r.destination.label;
+      sumDistance.textContent = `${r.distance_km.toFixed(2)} km`;
+      sumDuration.textContent = `${r.duration_minutes} min`;
+      // Fare with confidence band (client-side heuristic +/-)
+      if (r.fare) {
+        const amt = Number(r.fare.amount);
+        const low = Math.max(0, amt * 0.9);
+        const high = amt * 1.15;
+        sumFare.textContent = `₱${amt.toFixed(2)} (${r.fare.category || 'Estimated'})`;        
+        sumFare.title = `Likely range: ₱${low.toFixed(2)} - ₱${high.toFixed(2)}`;
+      } else {
+        sumFare.textContent = '—';
+      }
+
+      // Legs and mode details (if municipality-serving terminal was used)
+      if (r.legs) {
+        const serving = r.terminals_used && r.terminals_used.serving_terminal ? r.terminals_used.serving_terminal : null;
+        if (sumServingTerminal) sumServingTerminal.textContent = serving ? serving.name : '—';
+        const eff = document.getElementById('sumEffectiveKm');
+        if (r.legs.terminal_start) {
+          // Terminal start: show combined vehicle only, no walk
+            if (sumWalk) sumWalk.textContent = '—';
+            const totalVehKm = (r.legs.start_terminal_to_serving_terminal_km || 0) + (r.legs.serving_terminal_to_destination_km || 0);
+            if (sumVehicle) sumVehicle.textContent = `${totalVehKm.toFixed(2)} km • ${r.legs.vehicle_minutes} min`;
+        } else {
+            const kmWalk = r.legs.user_to_terminal_km != null ? `${Number(r.legs.user_to_terminal_km).toFixed(2)} km` : '—';
+            const minWalk = r.legs.walk_minutes != null ? `${r.legs.walk_minutes} min` : '';
+            if (sumWalk) sumWalk.textContent = r.legs.user_to_terminal_km != null ? `${kmWalk} • ${minWalk}` : '—';
+            const kmVeh = r.legs.terminal_to_destination_km != null ? `${Number(r.legs.terminal_to_destination_km).toFixed(2)} km` : '—';
+            const minVeh = r.legs.vehicle_minutes != null ? `${r.legs.vehicle_minutes} min` : '';
+            if (sumVehicle) sumVehicle.textContent = r.legs.terminal_to_destination_km != null ? `${kmVeh} • ${minVeh}` : '—';
+        }
+
+        if (r.legs.selected_mode) {
+          const sm = r.legs.selected_mode;
+          const parts = [];
+          if (sm.type_name) parts.push(sm.type_name);
+          if (sm.estimated_fare != null) parts.push(`₱${Number(sm.estimated_fare).toFixed(2)}`);
+          if (sm.estimated_minutes != null) parts.push(`${sm.estimated_minutes} min`);
+          if (sumMode) sumMode.textContent = parts.length ? parts.join(' • ') : '—';
+          if (eff && sm.effective_km != null) eff.textContent = `${Number(sm.effective_km).toFixed(2)} km`;
+        } else if (sumMode) {
+          sumMode.textContent = '—';
+        }
+      } else {
+        if (sumServingTerminal) sumServingTerminal.textContent = '—';
+        if (sumWalk) sumWalk.textContent = '—';
+        if (sumVehicle) sumVehicle.textContent = '—';
+        if (sumMode) sumMode.textContent = '—';
+        const eff = document.getElementById('sumEffectiveKm'); if (eff) eff.textContent = '—';
+      }
+      if (!r.fare) {
+        showMessage('No fare data found for the selected terminals. Estimate not available.', 'warn');
+      }
+      btnStartNav.disabled = false;
+      if (startNavSp) startNavSp.disabled = false;
+
+      // Mirror values to side panel if present
+      mirrorIds.forEach(id => {
+        const main = document.getElementById(id);
+        const mirror = document.getElementById(id + '_sp');
+        if (main && mirror) mirror.textContent = main.textContent;
+      });
+    } catch (e) {
+      console.error(e);
+      showMessage('No route could be computed. Try another start or destination.', 'error');
+    }
+    finally { setLoading(false); }
+  }
+
+  // Event bindings
+  btnMyLocation.addEventListener('click', async () => {
+    messages.innerHTML = '';
+    if (!navigator.geolocation) {
+      showMessage('Geolocation is not supported by your browser.', 'error');
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        state.selection.start = { type: 'coords', id: null, label: 'My Location', lat: latitude, lng: longitude };
+        startInput.value = 'My Location';
+        L.circleMarker([latitude, longitude], { radius: 6, color: '#1a73e8' })
+          .addTo(state.markers.route)
+          .bindPopup('You are here');
+        map.setView([latitude, longitude], 13);
+      },
+      (err) => {
+        console.warn(err);
+        showMessage('Location permission denied or not available.', 'error');
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  });
+
+  btnFindRoute.addEventListener('click', findRoute);
+  btnClear.addEventListener('click', () => {
+    startInput.value = '';
+    destInput.value = '';
+    state.selection.start = null;
+    state.selection.dest = null;
+    clearRoute();
+    fitAllMarkers();
+  });
+
+  drawerToggle.addEventListener('click', () => {
+    drawer.classList.toggle('collapsed');
+    drawerToggle.textContent = drawer.classList.contains('collapsed') ? '▲' : '▼';
+  });
+
+  uiToggle.addEventListener('click', () => {
+    document.querySelector('.controls').classList.toggle('hidden');
+    setTimeout(() => map.invalidateSize(), 150);
+  });
+
+  btnStartNav.addEventListener('click', () => {
+    const r = { start: state.selection.start, dest: state.selection.dest };
+    if (!r.start || !r.dest) return;
+    const url = `https://www.google.com/maps/dir/?api=1&origin=${r.start.lat},${r.start.lng}&destination=${r.dest.lat},${r.dest.lng}`;
+    window.open(url, '_blank');
+  });
+  if (startNavSp) startNavSp.addEventListener('click', () => btnStartNav.click());
+
+  // Dark mode toggle
+  darkModeToggle?.addEventListener('click', () => {
+    document.body.classList.toggle('dark');
+    darkModeToggle.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
+  });
+
+  // Collapse side panel (desktop)
+  collapsePanelBtn?.addEventListener('click', () => {
+    sidePanel.classList.toggle('collapsed');
+    if (sidePanel.classList.contains('collapsed')) {
+      sidePanel.style.transform = 'translateX(340px)';
+      collapsePanelBtn.textContent = 'Show';
+      collapsePanelBtn.setAttribute('aria-expanded','false');
+    } else {
+      sidePanel.style.transform = 'translateX(0)';
+      collapsePanelBtn.textContent = 'Hide';
+      collapsePanelBtn.setAttribute('aria-expanded','true');
+    }
+  });
+
+  // Init
+  loadData();
+})();

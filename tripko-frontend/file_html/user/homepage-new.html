@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TripKo Pangasinan - Discover the Pearl of the Orient</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: 'Inter', system-ui, sans-serif; 
+      line-height: 1.6; 
+      color: #1a1a1a;
+      background: #fff;
+    }
+    
+    /* Header */
+    .header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      z-index: 1000;
+      transition: all 0.3s ease;
+    }
+    .header.scrolled {
+      background: rgba(255, 255, 255, 0.98);
+      box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+    }
+    .nav {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 80px;
+    }
+    .logo {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: #00a6b8;
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      list-style: none;
+    }
+    .nav-links a {
+      text-decoration: none;
+      color: #374151;
+      font-weight: 500;
+      transition: color 0.2s;
+      position: relative;
+    }
+    .nav-links a:hover {
+      color: #00a6b8;
+    }
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: #00a6b8;
+      transition: width 0.2s;
+    }
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+    .auth-buttons {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+    .btn-outline {
+      padding: 0.75rem 1.5rem;
+      border: 2px solid #00a6b8;
+      background: transparent;
+      color: #00a6b8;
+      border-radius: 50px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-outline:hover {
+      background: #00a6b8;
+      color: white;
+    }
+    .btn-primary {
+      padding: 0.75rem 1.5rem;
+      background: #00a6b8;
+      color: white;
+      border-radius: 50px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+      border: 2px solid #00a6b8;
+    }
+    .btn-primary:hover {
+      background: #008a99;
+      border-color: #008a99;
+    }
+    
+    /* Hero Section */
+    .hero {
+      position: relative;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: white;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(0,166,184,0.8), rgba(15,118,110,0.7)), 
+                  url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80') center/cover;
+      z-index: -1;
+    }
+    .hero-content {
+      max-width: 800px;
+      padding: 0 2rem;
+      z-index: 2;
+    }
+    .hero-title {
+      font-size: clamp(3rem, 8vw, 5rem);
+      font-weight: 800;
+      margin-bottom: 1.5rem;
+      letter-spacing: -2px;
+      line-height: 1.1;
+    }
+    .hero-subtitle {
+      font-size: 1.25rem;
+      margin-bottom: 3rem;
+      opacity: 0.95;
+      font-weight: 400;
+    }
+    
+    /* Search Widget */
+    .search-widget {
+      background: white;
+      padding: 2rem;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+      margin: 2rem auto 0;
+      max-width: 700px;
+    }
+    .search-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+    }
+    .search-tab {
+      padding: 0.75rem 1.5rem;
+      background: #f8fafc;
+      border: none;
+      border-radius: 50px;
+      font-weight: 600;
+      color: #64748b;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .search-tab.active {
+      background: #00a6b8;
+      color: white;
+    }
+    .search-form {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+    .search-input {
+      flex: 1;
+      padding: 1rem 1.5rem;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .search-input:focus {
+      outline: none;
+      border-color: #00a6b8;
+      box-shadow: 0 0 0 3px rgba(0,166,184,0.1);
+    }
+    .search-btn {
+      padding: 1rem 2rem;
+      background: linear-gradient(135deg, #00a6b8, #0f766e);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .search-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(0,166,184,0.3);
+    }
+    
+    /* Quick Actions */
+    .quick-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .quick-action {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.25rem;
+      background: rgba(0,166,184,0.1);
+      color: #00a6b8;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .quick-action:hover {
+      background: rgba(0,166,184,0.2);
+      transform: translateY(-2px);
+    }
+    
+    /* Popular Destinations */
+    .popular-section {
+      padding: 6rem 2rem;
+      background: #f8fafc;
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .section-header {
+      text-align: center;
+      margin-bottom: 4rem;
+    }
+    .section-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 1rem;
+    }
+    .section-subtitle {
+      font-size: 1.1rem;
+      color: #64748b;
+    }
+    
+    .destinations-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 2rem;
+    }
+    .destination-card {
+      background: white;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    .destination-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    }
+    .card-image {
+      height: 250px;
+      background-size: cover;
+      background-position: center;
+      position: relative;
+    }
+    .card-badge {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      background: rgba(0,166,184,0.9);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.875rem;
+    }
+    .card-content {
+      padding: 1.5rem;
+    }
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 0.5rem;
+    }
+    .card-location {
+      color: #64748b;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .card-description {
+      color: #475569;
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
+    .card-stats {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .stat {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #64748b;
+      font-size: 0.875rem;
+    }
+    
+    /* Features Section */
+    .features-section {
+      padding: 6rem 2rem;
+      background: white;
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 3rem;
+      margin-top: 4rem;
+    }
+    .feature {
+      text-align: center;
+      padding: 2rem;
+    }
+    .feature-icon {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #00a6b8, #0f766e);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.5rem;
+      font-size: 2rem;
+      color: white;
+    }
+    .feature-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 1rem;
+    }
+    .feature-description {
+      color: #64748b;
+      line-height: 1.6;
+    }
+    
+    /* CTA Section */
+    .cta-section {
+      padding: 6rem 2rem;
+      background: linear-gradient(135deg, #00a6b8, #0f766e);
+      color: white;
+      text-align: center;
+    }
+    .cta-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+    .cta-subtitle {
+      font-size: 1.1rem;
+      margin-bottom: 2rem;
+      opacity: 0.9;
+    }
+    .cta-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn-white {
+      padding: 1rem 2rem;
+      background: white;
+      color: #00a6b8;
+      border-radius: 50px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-white:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(255,255,255,0.3);
+    }
+    
+    /* Footer */
+    .footer {
+      background: #1e293b;
+      color: white;
+      padding: 3rem 2rem 2rem;
+    }
+    .footer-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+    }
+    .footer-section h3 {
+      margin-bottom: 1rem;
+      color: #00a6b8;
+    }
+    .footer-section a {
+      color: #cbd5e1;
+      text-decoration: none;
+      display: block;
+      margin-bottom: 0.5rem;
+      transition: color 0.2s;
+    }
+    .footer-section a:hover {
+      color: #00a6b8;
+    }
+    .footer-bottom {
+      text-align: center;
+      padding-top: 2rem;
+      border-top: 1px solid #334155;
+      color: #94a3b8;
+    }
+    
+    /* Mobile */
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+      }
+      .search-form {
+        flex-direction: column;
+      }
+      .hero-title {
+        font-size: 2.5rem;
+      }
+      .destinations-grid {
+        grid-template-columns: 1fr;
+      }
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
+      .cta-buttons {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header" id="header">
+    <nav class="nav">
+      <a href="#" class="logo">TripKo</a>
+      <ul class="nav-links">
+        <li><a href="#destinations">Destinations</a></li>
+        <li><a href="map.html">Explore Map</a></li>
+        <li><a href="../things-to-do.php">Things to Do</a></li>
+        <li><a href="#plan">Plan Trip</a></li>
+        <li><a href="#about">About</a></li>
+      </ul>
+      <div class="auth-buttons">
+        <a href="../SignUp_LogIn_Form.php" class="btn-outline">Sign In</a>
+        <a href="profile.html" class="btn-primary">My Profile</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <h1 class="hero-title">Discover Pangasinan</h1>
+      <p class="hero-subtitle">Uncover hidden gems, breathtaking landscapes, and unforgettable experiences in the Pearl of the Orient</p>
+      
+      <div class="search-widget">
+        <div class="search-tabs">
+          <button class="search-tab active" data-tab="places">Places</button>
+          <button class="search-tab" data-tab="experiences">Experiences</button>
+          <button class="search-tab" data-tab="hotels">Hotels</button>
+          <button class="search-tab" data-tab="restaurants">Restaurants</button>
+        </div>
+        
+        <div class="search-form">
+          <input type="text" class="search-input" placeholder="Where do you want to go?" id="heroSearch">
+          <button class="search-btn" onclick="performSearch()">
+            <i class="fas fa-search"></i>
+            Search
+          </button>
+        </div>
+        
+        <div class="quick-actions">
+          <a href="map.php" class="quick-action">
+            <i class="fas fa-map"></i>
+            Interactive Map
+          </a>
+          <a href="../things-to-do.php" class="quick-action">
+            <i class="fas fa-route"></i>
+            Things to Do
+          </a>
+          <a href="places-to-go.php" class="quick-action">
+            <i class="fas fa-camera"></i>
+            Places to Visit
+          </a>
+          <a href="festivals-to-go.php" class="quick-action">
+            <i class="fas fa-calendar"></i>
+            Festivals
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Popular Destinations -->
+  <section class="popular-section" id="destinations">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Popular Destinations</h2>
+        <p class="section-subtitle">Discover the most loved places in Pangasinan</p>
+      </div>
+      
+      <div class="destinations-grid" id="destinationsGrid">
+        <!-- Will be populated by JavaScript -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features-section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Why Choose TripKo?</h2>
+        <p class="section-subtitle">Everything you need for the perfect Pangasinan adventure</p>
+      </div>
+      
+      <div class="features-grid">
+        <div class="feature">
+          <div class="feature-icon">
+            <i class="fas fa-map-marked-alt"></i>
+          </div>
+          <h3 class="feature-title">Interactive Maps</h3>
+          <p class="feature-description">Explore with our detailed interactive maps featuring real-time information, nearby amenities, and personalized recommendations.</p>
+        </div>
+        
+        <div class="feature">
+          <div class="feature-icon">
+            <i class="fas fa-users"></i>
+          </div>
+          <h3 class="feature-title">Community Reviews</h3>
+          <p class="feature-description">Read authentic reviews from fellow travelers and share your own experiences to help others discover amazing places.</p>
+        </div>
+        
+        <div class="feature">
+          <div class="feature-icon">
+            <i class="fas fa-route"></i>
+          </div>
+          <h3 class="feature-title">Smart Itineraries</h3>
+          <p class="feature-description">Let AI create personalized itineraries based on your interests, budget, and available time for the perfect trip.</p>
+        </div>
+        
+        <div class="feature">
+          <div class="feature-icon">
+            <i class="fas fa-mobile-alt"></i>
+          </div>
+          <h3 class="feature-title">Mobile Ready</h3>
+          <p class="feature-description">Access everything offline, get GPS navigation, and enjoy a seamless experience on any device, anywhere.</p>
+        </div>
+        
+        <div class="feature">
+          <div class="feature-icon">
+            <i class="fas fa-heart"></i>
+          </div>
+          <h3 class="feature-title">Save Favorites</h3>
+          <p class="feature-description">Create wish lists, save favorite spots, and organize your travel dreams for future adventures.</p>
+        </div>
+        
+        <div class="feature">
+          <div class="feature-icon">
+            <i class="fas fa-clock"></i>
+          </div>
+          <h3 class="feature-title">Real-time Updates</h3>
+          <p class="feature-description">Get live information about weather, events, crowd levels, and operating hours to plan your visit perfectly.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section">
+    <div class="container">
+      <h2 class="cta-title">Ready to Explore Pangasinan?</h2>
+      <p class="cta-subtitle">Join thousands of travelers discovering the beauty of Pangasinan with TripKo</p>
+      <div class="cta-buttons">
+        <a href="map.php" class="btn-white">Start Exploring</a>
+        <a href="../SignUp_LogIn_Form.php" class="btn-white">Create Account</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>Discover</h3>
+        <a href="places-to-go.php">Tourist Spots</a>
+        <a href="festivals-to-go.php">Festivals</a>
+        <a href="churches-to-go.php">Churches</a>
+        <a href="caves-to-go.php">Caves</a>
+      </div>
+      <div class="footer-section">
+        <h3>Plan</h3>
+        <a href="../things-to-do.php">Things to Do</a>
+        <a href="map.php">Interactive Map</a>
+        <a href="islands-to-go.php">Islands</a>
+        <a href="waterfalls-to-go.php">Waterfalls</a>
+      </div>
+      <div class="footer-section">
+        <h3>Connect</h3>
+        <a href="#">Community</a>
+        <a href="#">Reviews</a>
+        <a href="#">Photo Sharing</a>
+        <a href="#">Travel Stories</a>
+      </div>
+      <div class="footer-section">
+        <h3>Support</h3>
+        <a href="#">Help Center</a>
+        <a href="../contact-us.php">Contact Us</a>
+        <a href="../about-us.php">About TripKo</a>
+        <a href="#">Privacy Policy</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 TripKo Pangasinan. All rights reserved. Made with ❤️ for travelers.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Header scroll effect
+    window.addEventListener('scroll', () => {
+      const header = document.getElementById('header');
+      if (window.scrollY > 100) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+    });
+
+    // Search tabs
+    document.querySelectorAll('.search-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.search-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        
+        const searchInput = document.getElementById('heroSearch');
+        const tabType = tab.dataset.tab;
+        
+        const placeholders = {
+          places: 'Where do you want to go?',
+          experiences: 'What do you want to do?',
+          hotels: 'Find hotels and accommodations...',
+          restaurants: 'Discover local cuisine...'
+        };
+        
+        searchInput.placeholder = placeholders[tabType];
+      });
+    });
+
+    // Load popular destinations
+    async function loadDestinations() {
+      try {
+        const response = await fetch('../../../tripko-backend/api/map/markers.php');
+        const data = await response.json();
+        const spots = data.features?.filter(f => f.properties.category === 'spot').slice(0, 6) || [];
+        
+        const grid = document.getElementById('destinationsGrid');
+        grid.innerHTML = spots.map(spot => {
+          const props = spot.properties;
+          return `
+            <div class="destination-card" onclick="goToDestination(${props.id})">
+              <div class="card-image" style="background-image: url('${props.image || 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'}')">
+                <div class="card-badge">Popular</div>
+              </div>
+              <div class="card-content">
+                <h3 class="card-title">${props.name}</h3>
+                <div class="card-location">
+                  <i class="fas fa-map-marker-alt"></i>
+                  ${props.municipality || 'Pangasinan'}
+                </div>
+                <p class="card-description">${(props.description || 'Discover this amazing destination in Pangasinan.').slice(0, 120)}...</p>
+                <div class="card-stats">
+                  <div class="stat">
+                    <i class="fas fa-star"></i>
+                    <span>4.8 (${Math.floor(Math.random() * 200) + 50} reviews)</span>
+                  </div>
+                  <div class="stat">
+                    <i class="fas fa-camera"></i>
+                    <span>${Math.floor(Math.random() * 500) + 100} photos</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (error) {
+        console.error('Failed to load destinations:', error);
+      }
+    }
+
+    function goToDestination(spotId) {
+      window.location.href = `places-to-go.php?id=${spotId}`;
+    }
+
+    function performSearch() {
+      const query = document.getElementById('heroSearch').value;
+      const activeTab = document.querySelector('.search-tab.active').dataset.tab;
+      
+      // Route to appropriate page based on search type
+      if (activeTab === 'places') {
+        window.location.href = `places-to-go.php?search=${encodeURIComponent(query)}`;
+      } else if (activeTab === 'experiences') {
+        window.location.href = `../things-to-do.php?search=${encodeURIComponent(query)}`;
+      } else {
+        window.location.href = `map.php?search=${encodeURIComponent(query)}`;
+      }
+    }
+
+    // Enter key search
+    document.getElementById('heroSearch').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        performSearch();
+      }
+    });
+
+    // Smooth scrolling
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    });
+
+    // Load data on page load
+    document.addEventListener('DOMContentLoaded', loadDestinations);
+  </script>
+</body>
+</html>

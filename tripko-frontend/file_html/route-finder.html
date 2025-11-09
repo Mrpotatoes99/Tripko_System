@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TripKo Route Finder</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <link rel="stylesheet" href="../file_css/route-finder.css" />
+  <style>
+    /* Minimal fallback if CSS fails to load */
+    #map { height: 100vh; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <!-- Mobile UI toggle (collapses/expands the controls panel) -->
+  <button id="uiToggle" class="fab" aria-label="Toggle controls" title="Toggle controls">☰</button>
+
+  <div class="controls">
+    <div class="search-row">
+      <div class="field">
+        <label for="startInput">Start</label>
+        <input id="startInput" list="startOptions" placeholder="Search terminal or use my location" />
+        <datalist id="startOptions"></datalist>
+        <button id="btnMyLocation" class="ghost">Use My Location</button>
+      </div>
+      <div class="field">
+        <label for="destInput">Destination</label>
+        <input id="destInput" list="destOptions" placeholder="Search tourist spot" />
+        <datalist id="destOptions"></datalist>
+      </div>
+      <div class="field actions">
+        <button id="btnFindRoute">Find Route</button>
+        <button id="btnClear" class="ghost">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="drawer" id="drawer">
+    <div class="drawer-header">
+      <strong>Route Summary</strong>
+      <button id="drawerToggle" class="ghost">▼</button>
+    </div>
+    <div class="drawer-content" id="routeSummary">
+      <div class="summary-line"><span>Start:</span> <span id="sumStart">—</span></div>
+      <div class="summary-line"><span>Destination:</span> <span id="sumDest">—</span></div>
+      <div class="summary-line"><span>Distance:</span> <span id="sumDistance">—</span></div>
+      <div class="summary-line"><span>Duration:</span> <span id="sumDuration">—</span></div>
+      <div class="summary-line"><span>Fare:</span> <span id="sumFare">—</span></div>
+      <div class="summary-line"><span>Serving Terminal:</span> <span id="sumServingTerminal">—</span></div>
+      <div class="summary-line"><span>Walk:</span> <span id="sumWalk">—</span></div>
+      <div class="summary-line"><span>Vehicle:</span> <span id="sumVehicle">—</span></div>
+      <div class="summary-line"><span>Mode:</span> <span id="sumMode">—</span></div>
+      <div class="summary-actions">
+        <button id="btnStartNav" class="primary" disabled>Start Navigation</button>
+      </div>
+      <div id="messages" class="messages"></div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script>
+    window.TRIPKO_API_BASE = window.TRIPKO_API_BASE || '../../tripko-backend/api';
+  </script>
+  <script src="../file_js/route-finder.js"></script>
+</body>
+</html>
