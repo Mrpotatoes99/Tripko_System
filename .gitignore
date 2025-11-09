@@ -19,8 +19,9 @@ node_modules/
 # App runtime/uploads (don’t version user uploads)
 /uploads/
 
-# Sensitive backend configs (use the *.example.php templates instead)
-# Database.php and db.php now use env vars, safe to track
+# Sensitive backend configs (re-hide DB connection files)
+/tripko-backend/config/Database.php
+/tripko-backend/config/db.php
 /tripko-backend/config/mail_config.php
 /tripko-backend/config/sms_config.php
 /tripko-backend/config/debug.php
